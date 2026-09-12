@@ -9,6 +9,30 @@ const Resource = require('../models/Resource');
 const OCCUPIED_STATUSES = ['confirmed', 'pending', 'checked_in', 'in_progress'];
 
 /**
+ * Per-resource in-memory queue locks to serialize concurrent booking creation requests
+ * per physical bookable resource, eliminating TOCTOU race conditions.
+ */
+const resourceLocks = new Map();
+
+const acquireResourceLock = async (resourceId) => {
+  const key = resourceId.toString();
+  while (resourceLocks.get(key)) {
+    await resourceLocks.get(key);
+  }
+  let release;
+  const lockPromise = new Promise((resolve) => {
+    release = resolve;
+  });
+  resourceLocks.set(key, lockPromise);
+  return () => {
+    if (resourceLocks.get(key) === lockPromise) {
+      resourceLocks.delete(key);
+    }
+    release();
+  };
+};
+
+/**
  * Helper to parse date, time, and duration into UTC Date objects.
  * Supports date string ("YYYY-MM-DD") + startTime ("HH:mm") or direct ISO startAt timestamp.
  */
@@ -49,7 +73,7 @@ const parseInterval = (dateStr, startTimeStr, startAtInput, durationMinutes) => 
  * Checks if a resource has an overlapping booking for the half-open interval [startAt, endAt).
  * Overlap condition: existing.startAt < requested.endAt AND existing.endAt > requested.startAt
  */
-const isResourceOverlapping = async (resourceId, startAt, endAt, excludeBookingId = null) => {
+const isResourceOverlapping = async (resourceId, startAt, endAt, excludeBookingId = null, session = null) => {
   const query = {
     resourceId,
     status: { $in: OCCUPIED_STATUSES },
@@ -61,7 +85,12 @@ const isResourceOverlapping = async (resourceId, startAt, endAt, excludeBookingI
     query._id = { $ne: excludeBookingId };
   }
 
-  const overlappingBooking = await Booking.findOne(query);
+  let findQuery = Booking.findOne(query);
+  if (session) {
+    findQuery = findQuery.session(session);
+  }
+
+  const overlappingBooking = await findQuery;
   return !!overlappingBooking;
 };
 
@@ -152,7 +181,7 @@ const checkAvailability = async (gameId, resourceId, options = {}) => {
 };
 
 /**
- * Creates a new Booking for a customer.
+ * Creates a new Booking for a customer with per-resource concurrency locking to prevent TOCTOU double-booking.
  */
 const createBooking = async (userId, payload = {}) => {
   const { gameId, resourceId, date, startTime, startAt: inputStartAt, durationMinutes } = payload;
@@ -227,36 +256,90 @@ const createBooking = async (userId, payload = {}) => {
     throw error;
   }
 
-  // Overlap check
-  const hasOverlap = await isResourceOverlapping(resource._id, startAt, endAt);
-  if (hasOverlap) {
-    const error = new Error('The requested resource is already booked for this time interval');
-    error.statusCode = 409;
-    throw error;
+  // Acquire per-resource queue lock to serialize interval validation & insertion for this resource
+  const releaseLock = await acquireResourceLock(resource._id);
+
+  try {
+    // Attempt Mongoose session transaction if database supports transactions (Replica Set / Atlas)
+    let session = null;
+    try {
+      if (mongoose.connection.readyState === 1 && mongoose.connection.client) {
+        session = await mongoose.startSession();
+      }
+    } catch (e) {
+      session = null;
+    }
+
+    if (session) {
+      try {
+        let savedBooking;
+        await session.withTransaction(async () => {
+          const hasOverlap = await isResourceOverlapping(resource._id, startAt, endAt, null, session);
+          if (hasOverlap) {
+            const error = new Error('The requested resource is already booked for this time interval');
+            error.statusCode = 409;
+            throw error;
+          }
+
+          const effectivePricePerHour =
+            resource.customPricePerHour !== undefined && resource.customPricePerHour !== null
+              ? resource.customPricePerHour
+              : game.basePricePerHour;
+
+          const totalAmount = Math.round(effectivePricePerHour * (duration / 60) * 100) / 100;
+
+          const booking = new Booking({
+            userId,
+            gameId: game._id,
+            resourceId: resource._id,
+            startAt,
+            endAt,
+            durationMinutes: duration,
+            pricePerHourAtBooking: effectivePricePerHour,
+            totalAmount,
+            status: 'confirmed',
+          });
+
+          savedBooking = await booking.save({ session });
+        });
+        return savedBooking;
+      } finally {
+        session.endSession();
+      }
+    } else {
+      // Fallback for standalone DB / test suite: per-resource queue lock serialization
+      const hasOverlap = await isResourceOverlapping(resource._id, startAt, endAt);
+      if (hasOverlap) {
+        const error = new Error('The requested resource is already booked for this time interval');
+        error.statusCode = 409;
+        throw error;
+      }
+
+      const effectivePricePerHour =
+        resource.customPricePerHour !== undefined && resource.customPricePerHour !== null
+          ? resource.customPricePerHour
+          : game.basePricePerHour;
+
+      const totalAmount = Math.round(effectivePricePerHour * (duration / 60) * 100) / 100;
+
+      const booking = new Booking({
+        userId,
+        gameId: game._id,
+        resourceId: resource._id,
+        startAt,
+        endAt,
+        durationMinutes: duration,
+        pricePerHourAtBooking: effectivePricePerHour,
+        totalAmount,
+        status: 'confirmed',
+      });
+
+      const savedBooking = await booking.save();
+      return savedBooking;
+    }
+  } finally {
+    releaseLock();
   }
-
-  // Price Calculation & Snapshotting
-  const effectivePricePerHour =
-    resource.customPricePerHour !== undefined && resource.customPricePerHour !== null
-      ? resource.customPricePerHour
-      : game.basePricePerHour;
-
-  const totalAmount = Math.round(effectivePricePerHour * (duration / 60) * 100) / 100;
-
-  const booking = new Booking({
-    userId,
-    gameId: game._id,
-    resourceId: resource._id,
-    startAt,
-    endAt,
-    durationMinutes: duration,
-    pricePerHourAtBooking: effectivePricePerHour,
-    totalAmount,
-    status: 'confirmed',
-  });
-
-  const savedBooking = await booking.save();
-  return savedBooking;
 };
 
 /**

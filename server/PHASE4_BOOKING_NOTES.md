@@ -49,7 +49,16 @@ Location: `server/src/models/Booking.js`
 
 ---
 
-## 5. Pricing Calculation & Snapshot Behavior
+## 5. Double-Booking & Concurrency Strategy
+To prevent Time-of-Check to Time-of-Use (TOCTOU) race conditions under simultaneous HTTP requests:
+1. **Per-Resource Queue Locks**:
+   `bookingService.createBooking` acquires an asynchronous per-resource lock (`acquireResourceLock(resource._id)`). Concurrent requests attempting to book the exact same physical resource are serialized during interval check and insertion, ensuring that Request A's insert completes before Request B queries overlap.
+2. **Mongoose Session Transactions**:
+   When connected to a transaction-capable database (MongoDB Atlas / Replica Sets), `createBooking` wraps the overlap query and insertion inside `session.withTransaction(...)`, guaranteeing ACID read-isolation during concurrency.
+
+---
+
+## 6. Pricing Calculation & Snapshot Behavior
 - **Effective Price Per Hour**:
   If `Resource.customPricePerHour` is defined and non-null, use `Resource.customPricePerHour`; otherwise use `Game.basePricePerHour`.
 - **Total Amount**: `effectivePricePerHour * (durationMinutes / 60)`.
@@ -58,7 +67,7 @@ Location: `server/src/models/Booking.js`
 
 ---
 
-## 6. Booking Lifecycle & Cancellation Rules
+## 7. Booking Lifecycle & Cancellation Rules
 - **Default Status**: Newly created bookings default to `'confirmed'` (no online payment processing required in Phase 4).
 - **Cancellation Rules**:
   - Customers can cancel only their own bookings.
@@ -68,13 +77,13 @@ Location: `server/src/models/Booking.js`
 
 ---
 
-## 7. Database Indexes
+## 8. Database Indexes
 1. `{ resourceId: 1, status: 1, startAt: 1, endAt: 1 }`: Optimized for interval overlap and availability queries.
 2. `{ userId: 1, startAt: -1 }`: Optimized for customer "My Bookings" history sorted by start date.
 
 ---
 
-## 8. APIs Implemented
+## 9. APIs Implemented
 - `GET /api/v1/games/:gameId/resources/:resourceId/availability` — Check slot availability.
 - `POST /api/v1/bookings` — Customer booking creation.
 - `GET /api/v1/bookings` — List authenticated user's bookings.
