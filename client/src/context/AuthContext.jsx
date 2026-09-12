@@ -63,6 +63,22 @@ export const AuthProvider = ({ children }) => {
     return newUser;
   };
 
+  const loginAdmin = async (email, password) => {
+    const res = await authService.login(email, password);
+    const { token: newToken, user: newUser } = res.data;
+
+    // Enforce admin role boundary
+    if (newUser.role !== 'admin') {
+      throw new Error('Access denied: Admin control center requires administrative credentials.');
+    }
+
+    setToken(newToken);
+    setUser(newUser);
+    localStorage.setItem('play_arena_token', newToken);
+    localStorage.setItem('play_arena_user', JSON.stringify(newUser));
+    return newUser;
+  };
+
   const register = async (userData) => {
     const res = await authService.register(userData);
     const { token: newToken, user: newUser } = res.data;
@@ -88,9 +104,11 @@ export const AuthProvider = ({ children }) => {
         token,
         isAuthenticated: !!token && user?.role === 'customer',
         isStaffAuthenticated: !!token && (user?.role === 'staff' || user?.role === 'admin'),
+        isAdminAuthenticated: !!token && user?.role === 'admin',
         loading,
         login,
         loginStaff,
+        loginAdmin,
         register,
         logout,
       }}

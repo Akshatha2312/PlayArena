@@ -19,6 +19,16 @@ import { StaffSessionsPage } from '../pages/staff/StaffSessionsPage';
 import { StaffBookingDetailPage } from '../pages/staff/StaffBookingDetailPage';
 import { StaffProtectedRoute, StaffPublicOnlyRoute } from './StaffProtectedRoutes';
 
+import { AdminLoginPage } from '../pages/admin/AdminLoginPage';
+import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
+import { AdminGamesPage } from '../pages/admin/AdminGamesPage';
+import { AdminResourcesPage } from '../pages/admin/AdminResourcesPage';
+import { AdminBookingsPage } from '../pages/admin/AdminBookingsPage';
+import { AdminCustomersPage } from '../pages/admin/AdminCustomersPage';
+import { AdminStaffPage } from '../pages/admin/AdminStaffPage';
+import { AdminPaymentsPage } from '../pages/admin/AdminPaymentsPage';
+import { AdminProtectedRoute, AdminPublicOnlyRoute } from './AdminProtectedRoutes';
+
 import { EmptyState } from '../components/StateComponents';
 
 export const AppRoutes = () => {
@@ -56,6 +66,23 @@ export const AppRoutes = () => {
         <Route path="/staff/check-in" element={<StaffCheckInPage />} />
         <Route path="/staff/sessions" element={<StaffSessionsPage />} />
         <Route path="/staff/bookings/:id" element={<StaffBookingDetailPage />} />
+      </Route>
+
+      {/* Admin Control Center Public Routes */}
+      <Route element={<AdminPublicOnlyRoute />}>
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+      </Route>
+
+      {/* Admin Control Center Protected Routes */}
+      <Route element={<AdminProtectedRoute />}>
+        <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/games" element={<AdminGamesPage />} />
+        <Route path="/admin/resources" element={<AdminResourcesPage />} />
+        <Route path="/admin/bookings" element={<AdminBookingsPage />} />
+        <Route path="/admin/customers" element={<AdminCustomersPage />} />
+        <Route path="/admin/staff" element={<AdminStaffPage />} />
+        <Route path="/admin/payments" element={<AdminPaymentsPage />} />
       </Route>
 
       {/* 404 Route */}
