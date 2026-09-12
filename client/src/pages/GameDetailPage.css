@@ -1,0 +1,132 @@
+.game-detail-header {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 2.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.game-detail-title {
+  font-size: 2.75rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.game-detail-description {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1.65;
+}
+
+.game-rules-card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-card);
+}
+
+.game-rules-card h3 {
+  font-size: 1.15rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.75rem;
+}
+
+.rules-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.rule-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.rule-icon {
+  color: var(--color-accent);
+  width: 1.4rem;
+  height: 1.4rem;
+  flex-shrink: 0;
+}
+
+.rule-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.rule-value {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.resources-section {
+  border-top: 1px solid var(--color-border);
+  padding-top: 3rem;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.resource-card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-card);
+}
+
+.resource-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.resource-name {
+  font-size: 1.2rem;
+}
+
+.resource-pricing-info {
+  margin-bottom: 1.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.no-resources-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  margin-top: 1.5rem;
+  color: var(--color-text-muted);
+}
+
+.warning-icon {
+  color: var(--color-warning);
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .game-detail-header {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}

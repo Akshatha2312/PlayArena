@@ -1,0 +1,121 @@
+.navbar-header {
+  background-color: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4.5rem;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--color-text-main);
+  letter-spacing: 0.05em;
+}
+
+.logo-icon {
+  color: var(--color-primary);
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.logo-highlight {
+  color: var(--color-accent);
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.nav-link:hover {
+  color: var(--color-text-main);
+}
+
+.nav-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--color-bg-elevated);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+  color: var(--color-text-main);
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  color: var(--color-text-main);
+  padding: 0.5rem;
+}
+
+/* Responsive Mobile Navigation */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .navbar-nav {
+    position: absolute;
+    top: 4.5rem;
+    left: 0;
+    right: 0;
+    background-color: var(--color-bg-card);
+    border-bottom: 1px solid var(--color-border);
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1.25rem;
+    align-items: stretch;
+    display: none;
+  }
+
+  .navbar-nav.nav-open {
+    display: flex;
+  }
+
+  .user-profile-badge {
+    justify-content: center;
+  }
+
+  .auth-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .auth-buttons .btn {
+    width: 100%;
+  }
+}

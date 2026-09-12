@@ -1,0 +1,53 @@
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin: 2rem 0;
+}
+
+.state-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--color-accent);
+  margin-bottom: 1rem;
+}
+
+.state-title {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.state-message {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  max-width: 450px;
+}
+
+.state-error {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.error-badge {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.retry-btn {
+  margin-top: 1.25rem;
+}
+
+.margin-top {
+  margin-top: 1.25rem;
+}
