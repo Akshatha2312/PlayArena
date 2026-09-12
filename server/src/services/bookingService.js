@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Game = require('../models/Game');
 const Resource = require('../models/Resource');
+const notificationService = require('./notificationService');
 
 /**
  * Active booking statuses that occupy a physical resource time slot.
@@ -427,6 +428,14 @@ const cancelUserBooking = async (userId, bookingId, cancellationReason = '') => 
   booking.cancellationReason = typeof cancellationReason === 'string' ? cancellationReason.trim() : '';
 
   const updatedBooking = await booking.save();
+
+  // Safely trigger cancellation notification
+  try {
+    await notificationService.notifyBookingCancelled(updatedBooking);
+  } catch (notifErr) {
+    console.error('[bookingService] Non-fatal notification trigger error in cancelUserBooking:', notifErr.message);
+  }
+
   return updatedBooking;
 };
 

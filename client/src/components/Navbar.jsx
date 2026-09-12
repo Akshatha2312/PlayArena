@@ -1,13 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Trophy, Calendar, User, LogOut, Menu, X } from 'lucide-react';
+import { Trophy, Calendar, User, LogOut, Menu, X, Bell } from 'lucide-react';
+import { notificationService } from '../services/notificationService';
 import './Navbar.css';
 
 export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (isAuthenticated && user?.role === 'customer') {
+      notificationService
+        .getUnreadCount()
+        .then((res) => {
+          if (isMounted && res && res.data) {
+            setUnreadCount(res.data.unreadCount || 0);
+          }
+        })
+        .catch(() => {});
+    } else {
+      setUnreadCount(0);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, user]);
 
   const handleLogout = () => {
     logout();
@@ -46,6 +67,29 @@ export const Navbar = () => {
               <Link to="/my-payments" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
                 Payments
               </Link>
+              {user?.role === 'customer' && (
+                <Link to="/notifications" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                  <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Bell className="nav-icon" /> Notifications
+                    {unreadCount > 0 && (
+                      <span
+                        className="badge-unread"
+                        style={{
+                          backgroundColor: '#ef4444',
+                          color: '#ffffff',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          borderRadius: '9999px',
+                          padding: '2px 6px',
+                          marginLeft: '4px',
+                        }}
+                      >
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              )}
               <div className="user-profile-badge">
                 <User className="nav-icon" />
                 <span className="user-name">{user?.name}</span>

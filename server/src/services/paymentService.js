@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
 const razorpayService = require('./razorpayService');
+const notificationService = require('./notificationService');
 
 // In-memory per-booking locks to guarantee backend idempotency under rapid double-click / concurrent requests
 const bookingPaymentLocks = new Map();
@@ -233,6 +234,14 @@ const verifyPayment = async (userId, { razorpay_order_id, razorpay_payment_id, r
   await payment.save();
   await booking.save();
 
+  // Safely trigger notifications (idempotent, non-blocking failure)
+  try {
+    await notificationService.notifyPaymentSuccess(payment, booking);
+    await notificationService.notifyBookingConfirmed(booking);
+  } catch (notifErr) {
+    console.error('[paymentService] Non-fatal notification trigger error in verifyPayment:', notifErr.message);
+  }
+
   return {
     status: 'success',
     message: 'Payment verified and booking confirmed successfully',
@@ -320,10 +329,21 @@ const handleWebhook = async (rawBody, signature) => {
         booking.status = 'confirmed';
         await booking.save();
       }
-    }
 
-    await payment.save();
-    return { status: 'success', message: 'Payment captured via webhook successfully' };
+      await payment.save();
+
+      // Safely trigger notifications (idempotent, non-blocking failure)
+      try {
+        await notificationService.notifyPaymentSuccess(payment, booking);
+        if (booking && booking.status === 'confirmed') {
+          await notificationService.notifyBookingConfirmed(booking);
+        }
+      } catch (notifErr) {
+        console.error('[paymentService] Non-fatal notification trigger error in handleWebhook:', notifErr.message);
+      }
+
+      return { status: 'success', message: 'Payment captured via webhook successfully' };
+    }
   } else if (event === 'payment.failed') {
     const paymentEntity = payload.payload?.payment?.entity;
     if (!paymentEntity) {
