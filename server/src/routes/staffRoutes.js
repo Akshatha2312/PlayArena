@@ -6,6 +6,7 @@ const {
   getSchedule,
   getBookingDetails,
   lookupBooking,
+  verifyQR,
   performCheckIn,
   startSession,
   completeSession,
@@ -25,8 +26,9 @@ router.get('/profile', getStaffProfile);
 router.get('/dashboard', getDashboardSummary);
 router.get('/bookings', getSchedule);
 
-// Lookup & Details
+// Lookup & Details & QR Verification
 router.post('/check-in/lookup', lookupBooking);
+router.post('/check-in/verify-qr', verifyQR);
 router.get('/bookings/:id', getBookingDetails);
 
 // Session State Transitions & Walk-In

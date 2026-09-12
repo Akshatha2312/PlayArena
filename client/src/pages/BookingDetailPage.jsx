@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { bookingService } from '../services/bookingService';
+import { qrService } from '../services/qrService';
+import { socketService } from '../services/socketService';
+import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import { LoadingState, ErrorState } from '../components/StateComponents';
 import { Calendar, Clock, Tag, AlertTriangle, ShieldCheck, XCircle } from 'lucide-react';
 import './BookingDetailPage.css';
@@ -10,6 +13,7 @@ export const BookingDetailPage = () => {
   const navigate = useNavigate();
 
   const [booking, setBooking] = useState(null);
+  const [qrData, setQrData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -21,6 +25,28 @@ export const BookingDetailPage = () => {
 
   useEffect(() => {
     fetchBooking();
+
+    // Socket real-time subscription
+    socketService.connect();
+    socketService.joinBooking(id);
+
+    const unsubscribeUpdate = socketService.subscribe('booking:status_updated', (data) => {
+      if (data.bookingId === id) {
+        setBooking((prev) => (prev ? { ...prev, status: data.status } : prev));
+      }
+    });
+
+    const unsubscribeCheckIn = socketService.subscribe('booking:checked_in', (data) => {
+      if (data.bookingId === id) {
+        setBooking((prev) => (prev ? { ...prev, status: 'checked_in', checkedInAt: data.checkedInAt } : prev));
+      }
+    });
+
+    return () => {
+      unsubscribeUpdate();
+      unsubscribeCheckIn();
+      socketService.leaveBooking(id);
+    };
   }, [id]);
 
   const fetchBooking = () => {
@@ -31,6 +57,12 @@ export const BookingDetailPage = () => {
       .getUserBookingById(id)
       .then((res) => {
         setBooking(res.data.booking);
+        if (res.data.booking && res.data.booking.status === 'confirmed') {
+          qrService
+            .getBookingQR(id)
+            .then((qrRes) => setQrData(qrRes.data))
+            .catch(() => {});
+        }
       })
       .catch((err) => {
         setError(err.message || 'Failed to load booking details');
@@ -79,6 +111,29 @@ export const BookingDetailPage = () => {
             </button>
           )}
         </div>
+
+        {/* QR Code Section for Confirmed Bookings */}
+        {booking.status === 'confirmed' && qrData && (
+          <div style={{ marginTop: '24px', marginBottom: '24px', textAlign: 'center', backgroundColor: '#0f172a', padding: '24px', borderRadius: '8px', border: '1px solid #0284c7' }}>
+            <h3 style={{ color: '#38bdf8', marginTop: 0, marginBottom: '16px', fontSize: '1.1rem' }}>ENTRY QR PASS</h3>
+            <QRCodeDisplay value={qrData.qrToken} size={220} />
+            <p style={{ marginTop: '16px', marginBottom: 0, color: '#94a3b8', fontSize: '0.85rem' }}>
+              Present this QR code at Play Arena front desk for instant staff check-in.
+            </p>
+          </div>
+        )}
+
+        {/* Status Messages for Non-confirmed Bookings */}
+        {booking.status !== 'confirmed' && (
+          <div style={{ marginTop: '20px', marginBottom: '20px', padding: '16px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #334155', color: '#94a3b8', fontSize: '0.9rem' }}>
+            {booking.status === 'checked_in' && '✔ Checked in at venue. Enjoy your session!'}
+            {booking.status === 'in_progress' && '⚡ Session is currently active in progress.'}
+            {booking.status === 'completed' && '🏁 Session completed. Thank you for playing at Play Arena!'}
+            {booking.status === 'cancelled' && '❌ Booking has been cancelled.'}
+            {booking.status === 'no_show' && '⚠️ Marked as no-show.'}
+            {booking.status === 'pending' && '⏳ Payment pending.'}
+          </div>
+        )}
 
         <div className="detail-grid">
           <div className="grid-item">

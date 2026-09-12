@@ -8,6 +8,7 @@ const router = express.Router();
 router.post('/', authenticate, authorize('customer'), bookingController.createBooking);
 router.get('/', authenticate, authorize('customer'), bookingController.getUserBookings);
 router.get('/:id', authenticate, authorize('customer'), bookingController.getUserBookingById);
+router.get('/:id/qr', authenticate, authorize('customer'), bookingController.getBookingQR);
 router.patch('/:id/cancel', authenticate, authorize('customer'), bookingController.cancelUserBooking);
 
 module.exports = router;

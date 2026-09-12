@@ -174,10 +174,45 @@ const cancelUserBooking = async (req, res, next) => {
   }
 };
 
+/**
+ * Handles HTTP GET request for customer to retrieve their booking QR code payload.
+ */
+const getBookingQR = async (req, res, next) => {
+  try {
+    const userId = req.user.id || req.user._id || req.user.userId;
+    const { id } = req.params;
+
+    const booking = await bookingService.getUserBookingById(userId, id);
+    const qrService = require('../services/qrService');
+
+    const qrToken = qrService.generateQRToken(booking._id, userId);
+    const validity = qrService.getQRValidityState(booking);
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        bookingId: booking._id,
+        bookingReference: booking.bookingReference || booking._id.toString().slice(-6).toUpperCase(),
+        qrToken,
+        validity,
+      },
+    });
+  } catch (error) {
+    if (error.statusCode === 400 || error.statusCode === 404) {
+      return res.status(error.statusCode).json({
+        status: 'fail',
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   getAvailability,
   createBooking,
   getUserBookings,
   getUserBookingById,
   cancelUserBooking,
+  getBookingQR,
 };

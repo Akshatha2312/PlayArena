@@ -4,6 +4,8 @@ import { gameService } from '../../services/gameService';
 import { LoadingState, ErrorState } from '../../components/StateComponents';
 import { StaffWalkInModal } from './StaffWalkInModal';
 
+import { socketService } from '../../services/socketService';
+
 export const StaffDashboardPage = () => {
   const [summary, setSummary] = useState(null);
   const [games, setGames] = useState([]);
@@ -31,6 +33,16 @@ export const StaffDashboardPage = () => {
 
   useEffect(() => {
     fetchDashboard();
+
+    // Socket subscription for real-time operational schedule updates
+    socketService.connect();
+    const unsubscribe = socketService.subscribe('schedule:updated', () => {
+      fetchDashboard();
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   if (loading) return <LoadingState message="Loading Operations Dashboard..." />;

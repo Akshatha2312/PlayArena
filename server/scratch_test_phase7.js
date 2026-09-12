@@ -255,6 +255,25 @@ async function runPhase7Tests() {
     return inMemoryBookings.size;
   };
 
+  Booking.findOneAndUpdate = async function (query = {}, update = {}, options = {}) {
+    const list = Array.from(inMemoryBookings.values());
+    const doc = list.find((b) => {
+      if (query._id && b._id.toString() !== query._id.toString()) return false;
+      if (query.status && b.status !== query.status) return false;
+      return true;
+    });
+    if (!doc) return null;
+    if (update.$set) {
+      Object.assign(doc, update.$set);
+    }
+    inMemoryBookings.set(doc._id.toString(), doc);
+    const populated = createPopulatedBooking(doc);
+    populated.populate = async function () {
+      return populated;
+    };
+    return populated;
+  };
+
   let passed = 0;
   let failed = 0;
 

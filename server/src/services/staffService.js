@@ -209,23 +209,83 @@ const lookupBooking = async (queryStr) => {
   return bookings;
 };
 
+const qrService = require('./qrService');
+const socketService = require('./socketService');
+
+/**
+ * Staff QR code verification endpoint helper.
+ */
+const verifyQRAndGetBooking = async (qrPayload) => {
+  const booking = await qrService.verifyQRToken(qrPayload);
+  const validity = qrService.getQRValidityState(booking);
+
+  await booking.populate([
+    { path: 'userId', select: 'name email phone role' },
+    { path: 'gameId', select: 'title category' },
+    { path: 'resourceId', select: 'name status' },
+  ]);
+
+  return {
+    booking,
+    validity,
+  };
+};
+
 /**
  * Staff Check-in action (confirmed -> checked_in)
+ * Uses atomic Mongoose update to guarantee double check-in concurrency protection.
  */
 const performCheckIn = async (bookingId, staffUserId) => {
-  const booking = await getBookingDetails(bookingId);
-
-  if (!VALID_TRANSITIONS[booking.status]?.includes('checked_in')) {
-    const error = new Error(`Cannot check in a booking with status '${booking.status}'`);
+  if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+    const error = new Error('Invalid Booking ID format');
     error.statusCode = 400;
     throw error;
   }
 
-  booking.status = 'checked_in';
-  booking.checkedInAt = new Date();
-  booking.checkedInBy = staffUserId;
+  // Atomic update: only succeeds if current status is 'confirmed'
+  let booking = await Booking.findOneAndUpdate(
+    { _id: bookingId, status: 'confirmed' },
+    {
+      $set: {
+        status: 'checked_in',
+        checkedInAt: new Date(),
+        checkedInBy: staffUserId,
+      },
+    },
+    { new: true }
+  );
 
-  await booking.save();
+  // Handle cases where atomic transition didn't match (already checked-in, completed, cancelled, etc.)
+  if (!booking) {
+    const existing = await Booking.findById(bookingId);
+    if (!existing) {
+      const error = new Error('Booking not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (existing.status === 'checked_in') {
+      const error = new Error('Double Check-in Protection: Booking has already been checked in.');
+      error.statusCode = 409; // Conflict
+      throw error;
+    }
+
+    const error = new Error(`Cannot check in a booking with status '${existing.status}'`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  await booking.populate([
+    { path: 'userId', select: 'name email phone role' },
+    { path: 'gameId', select: 'title category' },
+    { path: 'resourceId', select: 'name status' },
+  ]);
+
+  // Real-time operational broadcast
+  try {
+    socketService.broadcastCheckIn(booking);
+  } catch (err) {}
+
   return booking;
 };
 
@@ -245,6 +305,11 @@ const startSession = async (bookingId, staffUserId) => {
   booking.startedAt = new Date();
 
   await booking.save();
+
+  try {
+    socketService.broadcastSessionStarted(booking);
+  } catch (err) {}
+
   return booking;
 };
 
@@ -264,6 +329,11 @@ const completeSession = async (bookingId, staffUserId) => {
   booking.completedAt = new Date();
 
   await booking.save();
+
+  try {
+    socketService.broadcastSessionCompleted(booking);
+  } catch (err) {}
+
   return booking;
 };
 
@@ -283,6 +353,11 @@ const markNoShow = async (bookingId, staffUserId) => {
   booking.noShowAt = new Date();
 
   await booking.save();
+
+  try {
+    socketService.broadcastBookingUpdated(booking);
+  } catch (err) {}
+
   return booking;
 };
 
@@ -323,6 +398,7 @@ module.exports = {
   getSchedule,
   getBookingDetails,
   lookupBooking,
+  verifyQRAndGetBooking,
   performCheckIn,
   startSession,
   completeSession,

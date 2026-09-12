@@ -183,11 +183,34 @@ const createWalkInBooking = async (req, res, next) => {
   }
 };
 
+/**
+ * POST /api/v1/staff/check-in/verify-qr
+ */
+const verifyQR = async (req, res, next) => {
+  try {
+    const { qrPayload } = req.body;
+    const result = await staffService.verifyQRAndGetBooking(qrPayload);
+    return res.status(200).json({
+      status: 'success',
+      data: result,
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        status: 'fail',
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboardSummary,
   getSchedule,
   getBookingDetails,
   lookupBooking,
+  verifyQR,
   performCheckIn,
   startSession,
   completeSession,
