@@ -2,7 +2,29 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 
-const QR_SECRET = process.env.QR_SECRET || process.env.JWT_SECRET || 'play_arena_super_secret_qr_key_2026';
+const getQRSecret = () => {
+  const secret = process.env.QR_SECRET || process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('QR_SECRET or JWT_SECRET environment variable must be defined');
+  }
+  if (process.env.NODE_ENV === 'production') {
+    if (secret.length < 32 || secret.includes('super_secret_qr_key')) {
+      throw new Error('FATAL: Insecure QR_SECRET detected in production environment.');
+    }
+  }
+  return secret;
+};
+
+/**
+ * Timing-safe string comparison helper.
+ */
+const safeCompare = (a, b) => {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+};
 
 /**
  * Generates an HMAC SHA256 signed QR token payload for a booking.
@@ -13,7 +35,7 @@ const generateQRToken = (bookingId, userId) => {
   const timestamp = Date.now().toString();
 
   const signature = crypto
-    .createHmac('sha256', QR_SECRET)
+    .createHmac('sha256', getQRSecret())
     .update(`${bId}:${userId ? userId.toString() : ''}:${timestamp}`)
     .digest('hex');
 
@@ -39,6 +61,14 @@ const verifyQRToken = async (qrPayload) => {
 
   const [, , bookingId, timestamp, signature] = parts;
 
+  // Validate timestamp numeric format & prevent extreme replay attacks (> 7 days old)
+  const tokenTime = parseInt(timestamp, 10);
+  if (isNaN(tokenTime) || tokenTime <= 0) {
+    const error = new Error('Invalid QR timestamp');
+    error.statusCode = 400;
+    throw error;
+  }
+
   if (!mongoose.Types.ObjectId.isValid(bookingId)) {
     const error = new Error('Invalid Booking ID in QR code');
     error.statusCode = 400;
@@ -52,19 +82,21 @@ const verifyQRToken = async (qrPayload) => {
     throw error;
   }
 
+  const secret = getQRSecret();
+
   // Recalculate signature with booking's userId
   const expectedSignature = crypto
-    .createHmac('sha256', QR_SECRET)
+    .createHmac('sha256', secret)
     .update(`${booking._id}:${booking.userId}:${timestamp}`)
     .digest('hex');
 
   // Fallback signature calculation if userId wasn't in original update
   const fallbackSignature = crypto
-    .createHmac('sha256', QR_SECRET)
+    .createHmac('sha256', secret)
     .update(`${booking._id}::${timestamp}`)
     .digest('hex');
 
-  if (signature !== expectedSignature && signature !== fallbackSignature) {
+  if (!safeCompare(signature, expectedSignature) && !safeCompare(signature, fallbackSignature)) {
     const error = new Error('Security Error: QR code signature verification failed or payload tampered');
     error.statusCode = 400;
     throw error;

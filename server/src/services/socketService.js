@@ -8,7 +8,8 @@ try {
   Server = null;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'play_arena_super_secret_jwt_key_2026';
+const { verifyToken } = require('../utils/token');
+const Booking = require('../models/Booking');
 
 let io = null;
 const eventBus = new EventEmitter();
@@ -39,17 +40,16 @@ const initSocketServer = (httpServer) => {
       }
 
       try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = verifyToken(token);
         socket.user = { userId: decoded.userId, role: decoded.role };
         next();
       } catch (err) {
-        return next(new Error('Authentication Error: Invalid socket token'));
+        return next(new Error('Authentication Error: Invalid or expired socket token'));
       }
     });
 
     io.on('connection', (socket) => {
       const { userId, role } = socket.user || {};
-      console.log(`[SocketService] Client connected: socketId=${socket.id}, userId=${userId}, role=${role}`);
 
       // Auto-join private user room
       if (userId) {
@@ -64,21 +64,27 @@ const initSocketServer = (httpServer) => {
         socket.join('admin:control');
       }
 
-      // Allow joining specific booking room if user is owner, staff, or admin
-      socket.on('join_booking', ({ bookingId }) => {
-        if (bookingId) {
+      // Allow joining specific booking room only if user is owner, staff, or admin
+      socket.on('join_booking', async ({ bookingId }) => {
+        if (!bookingId) return;
+
+        if (role === 'staff' || role === 'admin') {
           socket.join(`booking:${bookingId}`);
+          return;
         }
+
+        try {
+          const booking = await Booking.findById(bookingId).select('userId');
+          if (booking && booking.userId && booking.userId.toString() === userId) {
+            socket.join(`booking:${bookingId}`);
+          }
+        } catch (err) {}
       });
 
       socket.on('leave_booking', ({ bookingId }) => {
         if (bookingId) {
           socket.leave(`booking:${bookingId}`);
         }
-      });
-
-      socket.on('disconnect', () => {
-        console.log(`[SocketService] Client disconnected: socketId=${socket.id}`);
       });
     });
 

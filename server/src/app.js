@@ -1,19 +1,32 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+
+const { authLimiter, sensitiveApiLimiter, generalApiLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
-// 1. Core Global Middleware
+// 1. Production Security Headers & CORS
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Allowed for cross-origin React frontend & Razorpay checkout compatibility
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
 }));
 
+// Apply general API rate limiter
+app.use('/api/', generalApiLimiter);
+
 // API Routes & Route-specific Middlewares
 const paymentRoutes = require('./routes/paymentRoutes');
 
 // Mount /api/v1/payments BEFORE global express.json() so webhook can consume raw body
-app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/payments', sensitiveApiLimiter, paymentRoutes);
 
 // Global JSON parsing middleware for all other routes
 app.use(express.json());
@@ -44,13 +57,13 @@ const catalogRoutes = require('./routes/catalogRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
-app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/customer', customerRoutes);
 app.use('/api/v1/staff', staffRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/games', catalogRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
-app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/notifications', sensitiveApiLimiter, notificationRoutes);
 
 // 4. Unhandled Route Handler (404)
 app.use((req, res, next) => {
@@ -64,11 +77,15 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+  const isProd = process.env.NODE_ENV === 'production';
+
+  // In production, mask internal server 500 errors to prevent leaking stack traces or db errors
+  const message = isProd && statusCode === 500 ? 'Internal Server Error' : err.message || 'Internal Server Error';
 
   res.status(statusCode).json({
     status,
-    message: err.message || 'Internal Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    message,
+    ...(!isProd && { stack: err.stack }),
   });
 });
 

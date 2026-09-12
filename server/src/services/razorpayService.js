@@ -8,6 +8,12 @@ const getRazorpayInstance = () => {
     const key_id = process.env.RAZORPAY_KEY_ID || 'rzp_test_mock_key_id';
     const key_secret = process.env.RAZORPAY_KEY_SECRET || 'rzp_test_mock_key_secret';
 
+    if (process.env.NODE_ENV === 'production') {
+      if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET || key_id.includes('mock') || key_secret.includes('mock')) {
+        throw new Error('FATAL: Valid RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET must be configured in production mode.');
+      }
+    }
+
     razorpayInstance = new Razorpay({
       key_id,
       key_secret,
