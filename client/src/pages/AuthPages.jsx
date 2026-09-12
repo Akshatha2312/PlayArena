@@ -156,7 +156,7 @@ export const RegisterPage = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="reg-phone">Phone Number (Optional)</label>
+            <label htmlFor="reg-phone">Phone Number</label>
             <div className="input-with-icon">
               <Phone className="input-icon" />
               <input
@@ -165,6 +165,7 @@ export const RegisterPage = () => {
                 placeholder="+91 9876543210"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                required
               />
             </div>
           </div>

@@ -99,6 +99,7 @@ describe('Phase 6 Customer Frontend Test Suite', () => {
       renderWithProviders(<RegisterPage />);
       fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: 'Jane Doe' } });
       fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'jane@example.com' } });
+      fireEvent.change(screen.getByLabelText(/Phone Number/i), { target: { value: '9876543210' } });
       fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'Password123!' } });
       fireEvent.click(screen.getByRole('button', { name: /Register Account/i }));
 
@@ -106,7 +107,7 @@ describe('Phase 6 Customer Frontend Test Suite', () => {
         expect(authService.register).toHaveBeenCalledWith({
           name: 'Jane Doe',
           email: 'jane@example.com',
-          phone: '',
+          phone: '9876543210',
           password: 'Password123!',
         });
       });
