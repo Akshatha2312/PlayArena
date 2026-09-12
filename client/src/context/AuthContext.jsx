@@ -47,6 +47,22 @@ export const AuthProvider = ({ children }) => {
     return newUser;
   };
 
+  const loginStaff = async (email, password) => {
+    const res = await authService.login(email, password);
+    const { token: newToken, user: newUser } = res.data;
+
+    // Enforce staff/admin role boundary
+    if (newUser.role !== 'staff' && newUser.role !== 'admin') {
+      throw new Error('Access denied: Staff operations portal requires staff or admin credentials.');
+    }
+
+    setToken(newToken);
+    setUser(newUser);
+    localStorage.setItem('play_arena_token', newToken);
+    localStorage.setItem('play_arena_user', JSON.stringify(newUser));
+    return newUser;
+  };
+
   const register = async (userData) => {
     const res = await authService.register(userData);
     const { token: newToken, user: newUser } = res.data;
@@ -71,8 +87,10 @@ export const AuthProvider = ({ children }) => {
         user,
         token,
         isAuthenticated: !!token && user?.role === 'customer',
+        isStaffAuthenticated: !!token && (user?.role === 'staff' || user?.role === 'admin'),
         loading,
         login,
+        loginStaff,
         register,
         logout,
       }}

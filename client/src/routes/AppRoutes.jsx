@@ -10,6 +10,15 @@ import { MyBookingsPage } from '../pages/MyBookingsPage';
 import { BookingDetailPage } from '../pages/BookingDetailPage';
 import { MyPaymentsPage } from '../pages/MyPaymentsPage';
 import { ProtectedRoute, PublicOnlyRoute } from './ProtectedRoutes';
+
+import { StaffLoginPage } from '../pages/staff/StaffLoginPage';
+import { StaffDashboardPage } from '../pages/staff/StaffDashboardPage';
+import { StaffSchedulePage } from '../pages/staff/StaffSchedulePage';
+import { StaffCheckInPage } from '../pages/staff/StaffCheckInPage';
+import { StaffSessionsPage } from '../pages/staff/StaffSessionsPage';
+import { StaffBookingDetailPage } from '../pages/staff/StaffBookingDetailPage';
+import { StaffProtectedRoute, StaffPublicOnlyRoute } from './StaffProtectedRoutes';
+
 import { EmptyState } from '../components/StateComponents';
 
 export const AppRoutes = () => {
@@ -33,6 +42,20 @@ export const AppRoutes = () => {
         <Route path="/my-bookings" element={<MyBookingsPage />} />
         <Route path="/my-bookings/:id" element={<BookingDetailPage />} />
         <Route path="/my-payments" element={<MyPaymentsPage />} />
+      </Route>
+
+      {/* Staff Operations Public Routes */}
+      <Route element={<StaffPublicOnlyRoute />}>
+        <Route path="/staff/login" element={<StaffLoginPage />} />
+      </Route>
+
+      {/* Staff Operations Protected Routes */}
+      <Route element={<StaffProtectedRoute />}>
+        <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
+        <Route path="/staff/schedule" element={<StaffSchedulePage />} />
+        <Route path="/staff/check-in" element={<StaffCheckInPage />} />
+        <Route path="/staff/sessions" element={<StaffSessionsPage />} />
+        <Route path="/staff/bookings/:id" element={<StaffBookingDetailPage />} />
       </Route>
 
       {/* 404 Route */}

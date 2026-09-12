@@ -55,7 +55,7 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Booking status is required'],
       enum: {
-        values: ['pending', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled'],
+        values: ['pending', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'],
         message: '{VALUE} is not a valid booking status',
       },
       default: 'confirmed',
@@ -71,6 +71,27 @@ const bookingSchema = new mongoose.Schema(
       default: null,
     },
     cancelledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    checkedInAt: {
+      type: Date,
+      default: null,
+    },
+    startedAt: {
+      type: Date,
+      default: null,
+    },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+    noShowAt: {
+      type: Date,
+      default: null,
+    },
+    checkedInBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null,

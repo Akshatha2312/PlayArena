@@ -1,20 +1,32 @@
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
+import { StaffNavbar } from './components/StaffNavbar';
 import { Footer } from './components/Footer';
 import { AppRoutes } from './routes/AppRoutes';
 import './index.css';
+
+function MainLayout() {
+  const location = useLocation();
+  const isStaffRoute = location.pathname.startsWith('/staff');
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {isStaffRoute ? <StaffNavbar /> : <Navbar />}
+      <main style={{ flex: 1 }}>
+        <AppRoutes />
+      </main>
+      {!isStaffRoute && <Footer />}
+    </div>
+  );
+}
 
 export function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Navbar />
-        <main style={{ flex: 1 }}>
-          <AppRoutes />
-        </main>
-        <Footer />
+        <MainLayout />
       </AuthProvider>
     </BrowserRouter>
   );
