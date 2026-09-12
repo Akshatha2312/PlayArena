@@ -9,6 +9,13 @@ app.use(cors({
   credentials: true,
 }));
 
+// API Routes & Route-specific Middlewares
+const paymentRoutes = require('./routes/paymentRoutes');
+
+// Mount /api/v1/payments BEFORE global express.json() so webhook can consume raw body
+app.use('/api/v1/payments', paymentRoutes);
+
+// Global JSON parsing middleware for all other routes
 app.use(express.json());
 
 // 2. Base & Health Check API Endpoints
