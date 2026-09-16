@@ -1,0 +1,345 @@
+/* Admin Analytics & Reporting Styling */
+
+.analytics-page {
+  padding-bottom: 2.5rem;
+}
+
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.preset-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.analytics-select,
+.analytics-date-input,
+.analytics-search-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #ffffff;
+  font-size: 0.875rem;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.analytics-select:focus,
+.analytics-date-input:focus,
+.analytics-search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.custom-date-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date-sep {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.analytics-error-banner {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-weight: 500;
+}
+
+.analytics-kpi-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-bottom: 1.75rem;
+}
+
+.metric-cancellation {
+  border-left: 4px solid #ef4444;
+}
+
+.metric-customers {
+  border-left: 4px solid #8b5cf6;
+}
+
+.metric-value {
+  border-left: 4px solid #06b6d4;
+}
+
+/* Tabs Navigation */
+.analytics-tabs-bar {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.tab-btn {
+  padding: 0.65rem 1.15rem;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: #1e293b;
+  background-color: #f8fafc;
+  border-radius: 6px 6px 0 0;
+}
+
+.tab-btn.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+  background-color: #eff6ff;
+  border-radius: 6px 6px 0 0;
+}
+
+/* Tab Content Layouts */
+.card-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: -0.25rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Status Breakdown Container */
+.status-breakdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.status-bar-wrapper {
+  display: flex;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #f1f5f9;
+}
+
+.status-segment {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.status-segment.confirmed { background-color: #3b82f6; }
+.status-segment.checked_in { background-color: #8b5cf6; }
+.status-segment.in_progress { background-color: #f59e0b; }
+.status-segment.completed { background-color: #10b981; }
+.status-segment.cancelled { background-color: #ef4444; }
+.status-segment.no_show { background-color: #64748b; }
+
+.status-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.confirmed { background-color: #3b82f6; }
+.legend-dot.checked_in { background-color: #8b5cf6; }
+.legend-dot.in_progress { background-color: #f59e0b; }
+.legend-dot.completed { background-color: #10b981; }
+.legend-dot.cancelled { background-color: #ef4444; }
+.legend-dot.no_show { background-color: #64748b; }
+
+/* Snapshot Stats List */
+.snapshot-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.snapshot-stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px dashed #e2e8f0;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+/* Charts Styling */
+.chart-wrapper {
+  overflow-x: auto;
+  padding: 1rem 0;
+}
+
+.trend-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  height: 220px;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #cbd5e1;
+  min-width: 500px;
+}
+
+.chart-bar-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bar-val {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.bar-fill {
+  width: 80%;
+  max-width: 48px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+
+.revenue-fill {
+  background-color: #10b981;
+}
+
+.booking-fill {
+  background-color: #3b82f6;
+}
+
+.bar-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 6px;
+  white-space: nowrap;
+}
+
+.trend-summary-footer {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+  color: #475569;
+  flex-wrap: wrap;
+}
+
+/* Table Controls & Styling */
+.table-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.table-filter-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.analytics-table th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.category-tag,
+.code-tag {
+  background-color: #f1f5f9;
+  color: #475569;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* Hourly Distribution Chart */
+.hourly-chart-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 180px;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.hourly-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.hourly-bar {
+  width: 100%;
+  background-color: #8b5cf6;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.3s ease;
+}
+
+.hourly-label {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}

@@ -32,6 +32,12 @@ export const AdminNavbar = () => {
             📊 Overview
           </Link>
           <Link
+            to="/admin/analytics"
+            className={`admin-nav-item ${isActive('/admin/analytics') ? 'active' : ''}`}
+          >
+            📈 Analytics
+          </Link>
+          <Link
             to="/admin/games"
             className={`admin-nav-item ${isActive('/admin/games') ? 'active' : ''}`}
           >

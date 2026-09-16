@@ -28,6 +28,7 @@ import { AdminBookingsPage } from '../pages/admin/AdminBookingsPage';
 import { AdminCustomersPage } from '../pages/admin/AdminCustomersPage';
 import { AdminStaffPage } from '../pages/admin/AdminStaffPage';
 import { AdminPaymentsPage } from '../pages/admin/AdminPaymentsPage';
+import { AdminAnalyticsPage } from '../pages/admin/AdminAnalyticsPage';
 import { AdminProtectedRoute, AdminPublicOnlyRoute } from './AdminProtectedRoutes';
 
 import { EmptyState } from '../components/StateComponents';
@@ -79,6 +80,7 @@ export const AppRoutes = () => {
       <Route element={<AdminProtectedRoute />}>
         <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
         <Route path="/admin/games" element={<AdminGamesPage />} />
         <Route path="/admin/resources" element={<AdminResourcesPage />} />
         <Route path="/admin/bookings" element={<AdminBookingsPage />} />

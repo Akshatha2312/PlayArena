@@ -48,4 +48,8 @@ router.patch('/staff/:id', adminController.updateStaffUser);
 router.get('/payments', adminController.getAllPayments);
 router.get('/payments/:id', adminController.getPaymentById);
 
+// Analytics Routes
+const analyticsRoutes = require('./analyticsRoutes');
+router.use('/analytics', analyticsRoutes);
+
 module.exports = router;
