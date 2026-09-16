@@ -6,6 +6,11 @@ const { authLimiter, sensitiveApiLimiter, generalApiLimiter } = require('./middl
 
 const app = express();
 
+// Configure Trust Proxy for Reverse Proxies (Render, Railway, Nginx, Cloudflare)
+if (process.env.NODE_ENV === 'production' || process.env.TRUST_PROXY) {
+  app.set('trust proxy', process.env.TRUST_PROXY ? parseInt(process.env.TRUST_PROXY, 10) : 1);
+}
+
 // 1. Production Security Headers & CORS
 app.use(
   helmet({
