@@ -1,9 +1,4 @@
-let ioClient;
-try {
-  ioClient = require('socket.io-client');
-} catch (e) {
-  ioClient = null;
-}
+let ioClient = typeof window !== 'undefined' && window.io ? window.io : null;
 
 class ClientSocketManager {
   constructor() {
