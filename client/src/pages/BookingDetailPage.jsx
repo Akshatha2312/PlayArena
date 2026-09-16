@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { bookingService } from '../services/bookingService';
 import { qrService } from '../services/qrService';
 import { socketService } from '../services/socketService';
+import { invoiceService } from '../services/invoiceService';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
 import { LoadingState, ErrorState } from '../components/StateComponents';
 import { Calendar, Clock, Tag, AlertTriangle, ShieldCheck, XCircle } from 'lucide-react';
@@ -219,6 +220,22 @@ export const BookingDetailPage = () => {
           </div>
 
           <div className="action-button-group" style={{ display: 'flex', gap: '8px' }}>
+            {booking.status === 'confirmed' || booking.status === 'checked_in' || booking.status === 'in_progress' || booking.status === 'completed' ? (
+              <button className="btn btn-secondary" onClick={() => {
+                invoiceService.getInvoiceByBookingId(id)
+                  .then((res) => {
+                    if (res && res.data && res.data.invoice) {
+                      navigate(`/my-invoices/${res.data.invoice._id}`);
+                    }
+                  })
+                  .catch(() => {
+                    navigate('/my-invoices');
+                  });
+              }}>
+                🧾 Receipt / Invoice
+              </button>
+            ) : null}
+
             {isEligibleForReschedule && (
               <button className="btn btn-secondary" onClick={() => {
                 setRescheduleDate(new Date(booking.startAt).toISOString().split('T')[0]);

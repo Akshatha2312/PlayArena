@@ -58,6 +58,7 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const waitlistRoutes = require('./routes/waitlistRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
 
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/customer', customerRoutes);
@@ -68,6 +69,7 @@ app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/notifications', sensitiveApiLimiter, notificationRoutes);
 app.use('/api/v1/waitlist', waitlistRoutes);
 app.use('/api/v1/settings', sensitiveApiLimiter, settingsRoutes);
+app.use('/api/v1/invoices', invoiceRoutes);
 
 // 4. Unhandled Route Handler (404)
 app.use((req, res, next) => {

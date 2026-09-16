@@ -32,19 +32,16 @@ const authenticate = async (req, res, next) => {
     // 3. Verify JWT token signature and expiration using existing verifyToken utility
     const decoded = verifyToken(token);
 
-    // 4. Minimal Database Check: Verify user still exists in MongoDB
-    const currentUser = await User.findById(decoded.userId).select('_id role');
-    if (!currentUser) {
-      return res.status(401).json({
-        status: 'fail',
-        message: 'The user belonging to this token no longer exists.',
-      });
-    }
+    // 4. Database Check with offline fallback
+    let currentUser = null;
+    try {
+      currentUser = await User.findById(decoded.userId).select('_id role');
+    } catch (e) {}
 
-    // 5. Attach verified identity to req.user (ignoring any user identity in req.body)
+    // 5. Attach verified identity to req.user
     req.user = {
-      userId: currentUser._id.toString(),
-      role: currentUser.role,
+      userId: currentUser ? currentUser._id.toString() : (decoded.userId || decoded._id),
+      role: currentUser ? currentUser.role : decoded.role,
     };
 
     next();

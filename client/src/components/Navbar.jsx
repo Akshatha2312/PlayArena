@@ -69,6 +69,9 @@ export const Navbar = () => {
               </Link>
               {user?.role === 'customer' && (
                 <>
+                  <Link to="/my-invoices" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                    🧾 Invoices
+                  </Link>
                   <Link to="/my-waitlist" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
                     ⏳ Waitlist
                   </Link>
