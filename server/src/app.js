@@ -56,6 +56,19 @@ app.use('/api/v1/payments', sensitiveApiLimiter, paymentRoutes);
 // Global JSON parsing middleware for all other routes
 app.use(express.json());
 
+const { isDBConnected } = require('./config/database');
+
+const dbReadinessGuard = (req, res, next) => {
+  if (process.env.NODE_ENV !== 'test' && !isDBConnected()) {
+    return res.status(503).json({
+      status: 'error',
+      message: 'Database connection is not ready. Please try again in a moment.',
+    });
+  }
+  next();
+};
+
+
 // 2. Base & Health Check API Endpoints
 app.get('/', (req, res) => {
   res.json({
@@ -65,13 +78,19 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/v1/health', (req, res) => {
+  const dbConnected = isDBConnected();
   res.status(200).json({
     status: 'success',
     message: 'Play Arena API is healthy and operational',
+    dbStatus: dbConnected ? 'connected' : 'disconnected',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
   });
 });
+
+// Enforce DB readiness guard for all data routes under /api/v1
+app.use('/api/v1', dbReadinessGuard);
+
 
 // 3. API Routes
 const authRoutes = require('./routes/authRoutes');
