@@ -58,6 +58,9 @@ export const Navbar = () => {
           <Link to="/games" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
             Games Catalog
           </Link>
+          <Link to="/venue" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+            🗺️ Venue Map
+          </Link>
 
           {isAuthenticated ? (
             <>

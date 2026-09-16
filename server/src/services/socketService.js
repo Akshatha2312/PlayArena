@@ -232,6 +232,17 @@ const broadcastBookingRescheduled = (booking) => {
   emitEvent('admin:control', 'dashboard:updated', payload);
 };
 
+const broadcastVenueLayoutUpdated = (layoutInfo) => {
+  const payload = {
+    resourceId: layoutInfo.resourceId,
+    floor: layoutInfo.floor,
+    zone: layoutInfo.zone,
+    updatedAt: new Date().toISOString(),
+  };
+  emitEvent('staff:operations', 'venue:layout_updated', payload);
+  emitEvent('admin:control', 'venue:layout_updated', payload);
+};
+
 const getIO = () => io;
 const getEventBus = () => eventBus;
 
@@ -245,6 +256,7 @@ module.exports = {
   broadcastCancellation,
   broadcastWaitlistAvailable,
   broadcastBookingRescheduled,
+  broadcastVenueLayoutUpdated,
   getIO,
   getEventBus,
 };

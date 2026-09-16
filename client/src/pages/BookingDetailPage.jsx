@@ -220,6 +220,15 @@ export const BookingDetailPage = () => {
           </div>
 
           <div className="action-button-group" style={{ display: 'flex', gap: '8px' }}>
+            {booking.resourceId && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => navigate(`/venue?highlightResource=${booking.resourceId._id || booking.resourceId}`)}
+              >
+                🗺️ View on Venue Map
+              </button>
+            )}
+
             {booking.status === 'confirmed' || booking.status === 'checked_in' || booking.status === 'in_progress' || booking.status === 'completed' ? (
               <button className="btn btn-secondary" onClick={() => {
                 invoiceService.getInvoiceByBookingId(id)

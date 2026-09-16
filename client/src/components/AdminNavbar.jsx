@@ -50,6 +50,12 @@ export const AdminNavbar = () => {
             🏟️ Resources
           </Link>
           <Link
+            to="/admin/venue-layout"
+            className={`admin-nav-item ${isActive('/admin/venue-layout') ? 'active' : ''}`}
+          >
+            🗺️ Venue Layout
+          </Link>
+          <Link
             to="/admin/bookings"
             className={`admin-nav-item ${isActive('/admin/bookings') ? 'active' : ''}`}
           >

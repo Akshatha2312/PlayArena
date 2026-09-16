@@ -12,6 +12,12 @@ const ALLOWED_RESOURCE_FIELDS = [
   'customPricePerHour',
   'capacity',
   'locationNote',
+  'floor',
+  'zone',
+  'positionOrder',
+  'mapCoordinates',
+  'displayLabel',
+  'isVisibleOnMap',
   'isActive',
 ];
 

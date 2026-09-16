@@ -48,6 +48,34 @@ const resourceSchema = new mongoose.Schema(
       maxlength: [200, 'Location note cannot exceed 200 characters'],
       default: '',
     },
+    floor: {
+      type: String,
+      trim: true,
+      default: 'Ground Floor',
+    },
+    zone: {
+      type: String,
+      trim: true,
+      default: 'Main Arena',
+    },
+    positionOrder: {
+      type: Number,
+      default: 1,
+      min: [1, 'Position order must be at least 1'],
+    },
+    mapCoordinates: {
+      x: { type: Number, default: 50, min: 0, max: 100 },
+      y: { type: Number, default: 50, min: 0, max: 100 },
+    },
+    displayLabel: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    isVisibleOnMap: {
+      type: Boolean,
+      default: true,
+    },
     isActive: {
       type: Boolean,
       required: true,

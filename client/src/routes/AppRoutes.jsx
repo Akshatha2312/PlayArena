@@ -33,6 +33,8 @@ import { AdminCustomersPage } from '../pages/admin/AdminCustomersPage';
 import { AdminStaffPage } from '../pages/admin/AdminStaffPage';
 import { AdminPaymentsPage } from '../pages/admin/AdminPaymentsPage';
 import { AdminAnalyticsPage } from '../pages/admin/AdminAnalyticsPage';
+import { VenueMapPage } from '../pages/VenueMapPage';
+import { AdminVenueLayoutPage } from '../pages/admin/AdminVenueLayoutPage';
 import { AdminProtectedRoute, AdminPublicOnlyRoute } from './AdminProtectedRoutes';
 
 import { EmptyState } from '../components/StateComponents';
@@ -44,6 +46,7 @@ export const AppRoutes = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/games" element={<GamesCatalogPage />} />
       <Route path="/games/:id" element={<GameDetailPage />} />
+      <Route path="/venue" element={<VenueMapPage />} />
 
       {/* Guest Only Auth Routes */}
       <Route element={<PublicOnlyRoute />}>
@@ -91,6 +94,7 @@ export const AppRoutes = () => {
         <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
         <Route path="/admin/games" element={<AdminGamesPage />} />
         <Route path="/admin/resources" element={<AdminResourcesPage />} />
+        <Route path="/admin/venue-layout" element={<AdminVenueLayoutPage />} />
         <Route path="/admin/bookings" element={<AdminBookingsPage />} />
         <Route path="/admin/customers" element={<AdminCustomersPage />} />
         <Route path="/admin/staff" element={<AdminStaffPage />} />
