@@ -6,6 +6,9 @@ import { StaffNavbar } from './components/StaffNavbar';
 import { AdminNavbar } from './components/AdminNavbar';
 import { Footer } from './components/Footer';
 import { AppRoutes } from './routes/AppRoutes';
+import { OfflineBanner } from './components/OfflineBanner';
+import { PwaInstallBanner } from './components/PwaInstallBanner';
+import { PwaUpdatePrompt } from './components/PwaUpdatePrompt';
 import './index.css';
 
 function MainLayout() {
@@ -15,11 +18,14 @@ function MainLayout() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <OfflineBanner />
+      {!isStaffRoute && !isAdminRoute && <PwaInstallBanner />}
       {isAdminRoute ? <AdminNavbar /> : isStaffRoute ? <StaffNavbar /> : <Navbar />}
       <main style={{ flex: 1 }}>
         <AppRoutes />
       </main>
       {!isStaffRoute && !isAdminRoute && <Footer />}
+      <PwaUpdatePrompt />
     </div>
   );
 }
