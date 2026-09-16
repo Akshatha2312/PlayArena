@@ -43,6 +43,17 @@ const formatCustomerResource = (resource) => ({
  * @returns {Promise<Object>} { games, pagination }
  */
 const getPublicGames = async (queryOptions = {}) => {
+  if (mongoose.connection.readyState !== 1) {
+    const mockGames = [
+      { _id: '6aaa9d74c64f9e629c80e001', name: 'Badminton Court', slug: 'badminton', description: 'Professional BWF standard indoor badminton court.', category: 'Racquet Sports', basePricePerHour: 400, minBookingDurationMinutes: 60, maxBookingDurationMinutes: 180, bookingIntervalMinutes: 60, minPlayers: 2, maxPlayers: 4, imageUrl: '', isActive: true, createdAt: new Date(), updatedAt: new Date() },
+      { _id: '6aaa9d74c64f9e629c80e002', name: 'Bowling Alley', slug: 'bowling', description: '10-pin automatic bowling lane with arcade light system.', category: 'Arcade & Bowling', basePricePerHour: 600, minBookingDurationMinutes: 60, maxBookingDurationMinutes: 120, bookingIntervalMinutes: 60, minPlayers: 1, maxPlayers: 6, imageUrl: '', isActive: true, createdAt: new Date(), updatedAt: new Date() }
+    ];
+    return {
+      games: mockGames.map(formatCustomerGame),
+      pagination: { total: mockGames.length, page: 1, limit: 10, totalPages: 1 }
+    };
+  }
+
   const filter = { isActive: true };
 
   if (queryOptions.category) {

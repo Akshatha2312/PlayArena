@@ -1,3 +1,6 @@
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import venueService from '../services/venueService';
 import { LoadingState, ErrorState } from '../components/StateComponents';
 import { MapPin, Navigation, Info, ShieldAlert, CheckCircle2, Wrench, AlertTriangle, Layers, LayoutGrid } from 'lucide-react';
 import './VenueMapPage.css';

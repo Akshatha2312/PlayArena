@@ -19,10 +19,30 @@ app.use(
   })
 );
 
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true,
-}));
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((url) => url.trim());
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+
+      const isAllowedConfigured = allowedOrigins.includes(origin);
+      const isDevLocalhost =
+        process.env.NODE_ENV !== 'production' &&
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+
+      if (isAllowedConfigured || isDevLocalhost) {
+        return callback(null, true);
+      } else {
+        return callback(new Error(`CORS policy error: Origin ${origin} is not allowed by CORS`));
+      }
+    },
+    credentials: true,
+  })
+);
 
 // Apply general API rate limiter
 app.use('/api/', generalApiLimiter);
