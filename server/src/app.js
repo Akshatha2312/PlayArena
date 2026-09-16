@@ -61,6 +61,7 @@ const settingsRoutes = require('./routes/settingsRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const venueRoutes = require('./routes/venueRoutes');
 const supportRoutes = require('./routes/supportRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/customer', customerRoutes);
@@ -74,6 +75,7 @@ app.use('/api/v1/settings', sensitiveApiLimiter, settingsRoutes);
 app.use('/api/v1/invoices', invoiceRoutes);
 app.use('/api/v1/venue', venueRoutes);
 app.use('/api/v1/support', supportRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
 // 4. Unhandled Route Handler (404)
 app.use((req, res, next) => {

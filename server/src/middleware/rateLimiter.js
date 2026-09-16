@@ -56,8 +56,23 @@ const generalApiLimiter = rateLimit({
   skip: skipTestRequests,
 });
 
+/**
+ * Dedicated limiter for AI Assistant endpoints.
+ */
+const aiApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30, // limit each IP to 30 requests per 15 mins
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'AI Assistant request limit exceeded. Please wait a few minutes before asking more questions.',
+  handler: rateLimitHandler,
+  skip: skipTestRequests,
+});
+
 module.exports = {
   authLimiter,
   sensitiveApiLimiter,
   generalApiLimiter,
+  aiApiLimiter,
 };
+

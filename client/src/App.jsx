@@ -9,6 +9,7 @@ import { AppRoutes } from './routes/AppRoutes';
 import { OfflineBanner } from './components/OfflineBanner';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { PwaUpdatePrompt } from './components/PwaUpdatePrompt';
+import { AiAssistantWidget } from './components/AiAssistantWidget';
 import './index.css';
 
 function MainLayout() {
@@ -25,6 +26,7 @@ function MainLayout() {
         <AppRoutes />
       </main>
       {!isStaffRoute && !isAdminRoute && <Footer />}
+      {!isStaffRoute && !isAdminRoute && <AiAssistantWidget />}
       <PwaUpdatePrompt />
     </div>
   );
