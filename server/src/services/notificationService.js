@@ -3,9 +3,10 @@ const Notification = require('../models/Notification');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const emailService = require('./emailService');
+const whatsappService = require('./whatsappService');
 
 /**
- * Creates an in-app notification and dispatches an email idempotently.
+ * Creates an in-app notification and dispatches email/WhatsApp channels idempotently.
  */
 const sendNotification = async ({
   userId,
@@ -28,7 +29,7 @@ const sendNotification = async ({
       relatedBookingId,
       relatedPaymentId,
       eventKey,
-      channel: 'both',
+      channel: 'all',
     });
 
     await notification.save();
@@ -47,29 +48,75 @@ const sendNotification = async ({
     throw error;
   }
 
-  // Look up user email for email dispatch
+  // Look up user preferences, email, and phone
   try {
-    const user = await User.findById(userId).select('email name');
-    if (user && user.email) {
-      const emailPayload = {
-        userName: user.name,
-        title,
-        message,
-        ...emailData,
-      };
+    const user = await User.findById(userId).select('email phone name notificationPreferences');
+    if (user) {
+      const prefs = user.notificationPreferences || { emailEnabled: true, inAppEnabled: true, whatsappEnabled: true };
 
-      const emailResult = await emailService.sendEmail({
-        to: user.email,
-        type,
-        data: emailPayload,
-      });
+      // 1. Email Channel
+      if (user.email && prefs.emailEnabled !== false) {
+        try {
+          const emailPayload = {
+            userName: user.name,
+            title,
+            message,
+            ...emailData,
+          };
 
-      notification.emailStatus = emailResult.status || 'skipped';
+          const emailResult = await emailService.sendEmail({
+            to: user.email,
+            type,
+            data: emailPayload,
+          });
+
+          notification.emailStatus = emailResult.status || 'skipped';
+        } catch (emailErr) {
+          console.error('[NotificationService] Non-fatal error sending notification email:', emailErr.message);
+          notification.emailStatus = 'failed';
+        }
+      } else {
+        notification.emailStatus = 'skipped';
+      }
+
+      // 2. WhatsApp Channel
+      if (user.phone && prefs.whatsappEnabled !== false) {
+        try {
+          let waResult = { status: 'skipped' };
+          const waPayload = { ...emailData, message, title };
+
+          if (type === 'booking_confirmed') {
+            waResult = await whatsappService.sendBookingConfirmation({ phone: user.phone, data: waPayload });
+          } else if (type === 'payment_success') {
+            waResult = await whatsappService.sendPaymentSuccess({ phone: user.phone, data: waPayload });
+          } else if (type === 'booking_cancelled') {
+            waResult = await whatsappService.sendBookingCancellation({ phone: user.phone, data: waPayload });
+          } else if (type === 'booking_rescheduled') {
+            waResult = await whatsappService.sendBookingReschedule({ phone: user.phone, data: waPayload });
+          } else if (type === 'booking_reminder') {
+            waResult = await whatsappService.sendBookingReminder({ phone: user.phone, data: waPayload });
+          } else if (type === 'waitlist_available') {
+            waResult = await whatsappService.sendWaitlistAvailable({ phone: user.phone, data: waPayload });
+          } else {
+            waResult = await whatsappService.sendWhatsAppMessage({ to: user.phone, textFallback: message });
+          }
+
+          notification.whatsappStatus = waResult.status || 'skipped';
+          if (waResult.providerMessageId) {
+            notification.whatsappProviderMessageId = waResult.providerMessageId;
+          }
+        } catch (waErr) {
+          console.error('[NotificationService] Non-fatal error sending WhatsApp notification:', waErr.message);
+          notification.whatsappStatus = 'failed';
+        }
+      } else {
+        notification.whatsappStatus = 'skipped';
+      }
+
       await notification.save();
     }
-  } catch (emailErr) {
-    console.error('[NotificationService] Non-fatal error sending notification email:', emailErr.message);
-    // Failure to send email must NOT corrupt business transaction state or throw
+  } catch (lookupErr) {
+    console.error('[NotificationService] Error delivering multi-channel notification:', lookupErr.message);
   }
 
   return { duplicate: false, notification };

@@ -35,8 +35,8 @@ const notificationSchema = new mongoose.Schema(
     },
     channel: {
       type: String,
-      enum: ['in_app', 'email', 'both'],
-      default: 'both',
+      enum: ['in_app', 'email', 'whatsapp', 'all', 'both'],
+      default: 'all',
     },
     isRead: {
       type: Boolean,
@@ -57,6 +57,15 @@ const notificationSchema = new mongoose.Schema(
       type: String,
       enum: ['pending', 'sent', 'failed', 'skipped'],
       default: 'pending',
+    },
+    whatsappStatus: {
+      type: String,
+      enum: ['pending', 'sent', 'failed', 'skipped'],
+      default: 'pending',
+    },
+    whatsappProviderMessageId: {
+      type: String,
+      default: null,
     },
   },
   {

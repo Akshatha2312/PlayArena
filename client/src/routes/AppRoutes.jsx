@@ -11,6 +11,7 @@ import { BookingDetailPage } from '../pages/BookingDetailPage';
 import { MyPaymentsPage } from '../pages/MyPaymentsPage';
 import { MyWaitlistPage } from '../pages/MyWaitlistPage';
 import NotificationsPage from '../pages/NotificationsPage';
+import { NotificationSettingsPage } from '../pages/NotificationSettingsPage';
 import { ProtectedRoute, PublicOnlyRoute } from './ProtectedRoutes';
 
 import { StaffLoginPage } from '../pages/staff/StaffLoginPage';
@@ -57,6 +58,7 @@ export const AppRoutes = () => {
         <Route path="/my-payments" element={<MyPaymentsPage />} />
         <Route path="/my-waitlist" element={<MyWaitlistPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
       </Route>
 
       {/* Staff Operations Public Routes */}

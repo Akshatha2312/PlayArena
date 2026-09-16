@@ -23,16 +23,25 @@ export const BookingDetailPage = () => {
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState(null);
 
+  const [remainingTimeText, setRemainingTimeText] = useState(null);
+  const [socketConnected, setSocketConnected] = useState(false);
+
   useEffect(() => {
     fetchBooking();
 
     // Socket real-time subscription
-    socketService.connect();
+    const socket = socketService.connect();
+    if (socket) {
+      setSocketConnected(socket.connected);
+      socket.on('connect', () => setSocketConnected(true));
+      socket.on('disconnect', () => setSocketConnected(false));
+    }
+
     socketService.joinBooking(id);
 
     const unsubscribeUpdate = socketService.subscribe('booking:status_updated', (data) => {
       if (data.bookingId === id) {
-        setBooking((prev) => (prev ? { ...prev, status: data.status } : prev));
+        setBooking((prev) => (prev ? { ...prev, status: data.status, startAt: data.startAt || prev.startAt, endAt: data.endAt || prev.endAt } : prev));
       }
     });
 
@@ -42,12 +51,75 @@ export const BookingDetailPage = () => {
       }
     });
 
+    const unsubscribeStarted = socketService.subscribe('session:started', (data) => {
+      if (data.bookingId === id) {
+        setBooking((prev) => (prev ? { ...prev, status: 'in_progress', startedAt: data.startedAt } : prev));
+      }
+    });
+
+    const unsubscribeCompleted = socketService.subscribe('session:completed', (data) => {
+      if (data.bookingId === id) {
+        setBooking((prev) => (prev ? { ...prev, status: 'completed', completedAt: data.completedAt } : prev));
+      }
+    });
+
+    const unsubscribeCancelled = socketService.subscribe('booking:cancelled', (data) => {
+      if (data.bookingId === id) {
+        setBooking((prev) => (prev ? { ...prev, status: 'cancelled', cancelledAt: data.cancelledAt } : prev));
+      }
+    });
+
+    const unsubscribeRescheduled = socketService.subscribe('booking:rescheduled', (data) => {
+      if (data.bookingId === id) {
+        setBooking((prev) => (prev ? {
+          ...prev,
+          status: data.status,
+          startAt: data.startAt,
+          endAt: data.endAt,
+          durationMinutes: data.durationMinutes,
+          isRescheduled: true,
+          rescheduledAt: data.rescheduledAt
+        } : prev));
+      }
+    });
+
     return () => {
       unsubscribeUpdate();
       unsubscribeCheckIn();
+      unsubscribeStarted();
+      unsubscribeCompleted();
+      unsubscribeCancelled();
+      unsubscribeRescheduled();
       socketService.leaveBooking(id);
     };
   }, [id]);
+
+  // Live countdown timer based on endAt timestamp
+  useEffect(() => {
+    if (!booking || booking.status !== 'in_progress' || !booking.endAt) {
+      setRemainingTimeText(null);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const end = new Date(booking.endAt).getTime();
+      const diffMs = end - now;
+
+      if (diffMs <= 0) {
+        setRemainingTimeText('Session ending...');
+      } else {
+        const totalSecs = Math.floor(diffMs / 1000);
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        setRemainingTimeText(`${mins}m ${secs < 10 ? '0' : ''}${secs}s remaining`);
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [booking]);
 
   const fetchBooking = () => {
     setLoading(true);
@@ -140,6 +212,9 @@ export const BookingDetailPage = () => {
                 🔄 Rescheduled ({booking.rescheduleCount})
               </span>
             )}
+            <span className="socket-status-badge" style={{ marginLeft: '8px', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: socketConnected ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: socketConnected ? '#4ade80' : '#f87171', border: `1px solid ${socketConnected ? '#22c55e' : '#ef4444'}` }}>
+              {socketConnected ? '🟢 Live Syncing' : '🔴 REST Fallback'}
+            </span>
             <h1 className="detail-title">RESERVATION #{id}</h1>
           </div>
 
@@ -161,6 +236,57 @@ export const BookingDetailPage = () => {
             )}
           </div>
         </div>
+
+        {/* Live Session Timeline */}
+        <div className="session-timeline-container" style={{ margin: '20px 0', padding: '20px', backgroundColor: '#090d16', borderRadius: '8px', border: '1px solid #1e293b' }}>
+          <h4 style={{ color: '#94a3b8', margin: '0 0 16px 0', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>LIVE SESSION TIMELINE</h4>
+          <div className="timeline-steps" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+            {[
+              { key: 'confirmed', label: 'CONFIRMED', step: 1 },
+              { key: 'checked_in', label: 'CHECKED IN', step: 2 },
+              { key: 'in_progress', label: 'ACTIVE SESSION', step: 3 },
+              { key: 'completed', label: 'COMPLETED', step: 4 },
+            ].map((st, idx, arr) => {
+              const order = { pending: 0, confirmed: 1, checked_in: 2, in_progress: 3, completed: 4, cancelled: -1, no_show: -1 };
+              const currentOrder = order[booking.status] || 0;
+              const isDone = currentOrder >= st.step && currentOrder !== -1;
+              const isActive = currentOrder === st.step && currentOrder !== -1;
+
+              return (
+                <div key={st.key} className="timeline-step-item" style={{ flex: 1, textAlign: 'center', position: 'relative', zIndex: 2 }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    backgroundColor: isDone ? (isActive ? '#0284c7' : '#16a34a') : '#1e293b',
+                    color: isDone ? '#ffffff' : '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 8px auto',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    border: isActive ? '2px solid #38bdf8' : 'none',
+                    boxShadow: isActive ? '0 0 10px rgba(56, 189, 248, 0.5)' : 'none'
+                  }}>
+                    {isDone ? '✓' : st.step}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: isActive ? 'bold' : 'normal', color: isActive ? '#38bdf8' : isDone ? '#f8fafc' : '#64748b' }}>
+                    {st.label}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Session Live Countdown for In Progress Bookings */}
+        {booking.status === 'in_progress' && remainingTimeText && (
+          <div style={{ margin: '16px 0', padding: '16px', backgroundColor: 'rgba(2, 132, 199, 0.15)', borderRadius: '8px', border: '1px solid #0284c7', textAlign: 'center' }}>
+            <span style={{ fontSize: '0.9rem', color: '#7dd3fc', fontWeight: 'bold' }}>⏱️ LIVE SESSION COUNTDOWN: </span>
+            <span style={{ fontSize: '1.2rem', color: '#38bdf8', fontWeight: 'bold', marginLeft: '8px' }}>{remainingTimeText}</span>
+          </div>
+        )}
 
         {/* QR Code Section for Confirmed Bookings */}
         {booking.status === 'confirmed' && qrData && (

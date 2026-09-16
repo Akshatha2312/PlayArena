@@ -93,6 +93,9 @@ export const Navbar = () => {
                     )}
                   </span>
                   </Link>
+                  <Link to="/settings/notifications" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                    ⚙️ Settings
+                  </Link>
                 </>
               )}
               <div className="user-profile-badge">

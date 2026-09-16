@@ -33,6 +33,20 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    notificationPreferences: {
+      emailEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      inAppEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      whatsappEnabled: {
+        type: Boolean,
+        default: true,
+      },
+    },
   },
   {
     timestamps: true,
