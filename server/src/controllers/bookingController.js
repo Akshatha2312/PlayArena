@@ -208,11 +208,48 @@ const getBookingQR = async (req, res, next) => {
   }
 };
 
+/**
+ * Handles HTTP PATCH request for customer to reschedule an eligible booking.
+ */
+const rescheduleUserBooking = async (req, res, next) => {
+  try {
+    const userId = req.user.id || req.user._id || req.user.userId;
+    const { id } = req.params;
+
+    const booking = await bookingService.rescheduleUserBooking(userId, id, req.body || {});
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Booking rescheduled successfully',
+      data: {
+        booking,
+      },
+    });
+  } catch (error) {
+    if (error.statusCode === 409) {
+      return res.status(409).json({
+        status: 'fail',
+        message: error.message || 'Conflict: the requested time slot is unavailable',
+      });
+    }
+
+    if (error.statusCode === 400 || error.statusCode === 404) {
+      return res.status(error.statusCode).json({
+        status: 'fail',
+        message: error.message,
+      });
+    }
+
+    next(error);
+  }
+};
+
 module.exports = {
   getAvailability,
   createBooking,
   getUserBookings,
   getUserBookingById,
   cancelUserBooking,
+  rescheduleUserBooking,
   getBookingQR,
 };

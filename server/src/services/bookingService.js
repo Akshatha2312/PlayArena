@@ -429,14 +429,157 @@ const cancelUserBooking = async (userId, bookingId, cancellationReason = '') => 
 
   const updatedBooking = await booking.save();
 
-  // Safely trigger cancellation notification
+  // Safely trigger cancellation notification and waitlist processing
   try {
     await notificationService.notifyBookingCancelled(updatedBooking);
   } catch (notifErr) {
     console.error('[bookingService] Non-fatal notification trigger error in cancelUserBooking:', notifErr.message);
   }
 
+  try {
+    const waitlistService = require('./waitlistService');
+    await waitlistService.processWaitlistOnCancellation(updatedBooking);
+  } catch (wlErr) {
+    console.error('[bookingService] Non-fatal waitlist processing error in cancelUserBooking:', wlErr.message);
+  }
+
   return updatedBooking;
+};
+
+/**
+ * Reschedules an eligible booking belonging to the authenticated user.
+ * Enforces per-resource concurrency locking, interval availability checks, and server-calculated pricing.
+ */
+const rescheduleUserBooking = async (userId, bookingId, payload = {}) => {
+  if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+    const error = new Error('Invalid Booking ID format');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const booking = await Booking.findOne({ _id: bookingId, userId });
+  if (!booking) {
+    const error = new Error('Booking not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const eligibleStatuses = ['confirmed', 'pending', 'checked_in'];
+  if (!eligibleStatuses.includes(booking.status)) {
+    const error = new Error(`Bookings with status '${booking.status}' cannot be rescheduled`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const targetResourceId = payload.resourceId || booking.resourceId;
+  if (!mongoose.Types.ObjectId.isValid(targetResourceId)) {
+    const error = new Error('Invalid Resource ID format');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const game = await Game.findById(booking.gameId);
+  if (!game || game.isActive === false) {
+    const error = new Error('Associated Game is inactive or not found');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const resource = await Resource.findById(targetResourceId);
+  if (!resource || resource.gameId.toString() !== game._id.toString()) {
+    const error = new Error('Resource not found or does not belong to the booking Game');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (resource.isActive === false || resource.status !== 'available') {
+    const error = new Error('Resource is currently inactive or not available');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const durationMinutes = payload.durationMinutes || booking.durationMinutes;
+
+  const { startAt: newStartAt, endAt: newEndAt, durationMinutes: newDuration } = parseInterval(
+    payload.date,
+    payload.startTime,
+    payload.startAt,
+    durationMinutes
+  );
+
+  if (newDuration < game.minBookingDurationMinutes) {
+    const error = new Error(`Booking duration must be at least ${game.minBookingDurationMinutes} minutes`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (newDuration > game.maxBookingDurationMinutes) {
+    const error = new Error(`Booking duration cannot exceed ${game.maxBookingDurationMinutes} minutes`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (newDuration % game.bookingIntervalMinutes !== 0) {
+    const error = new Error(`Booking duration must follow ${game.bookingIntervalMinutes}-minute increments`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Acquire per-resource queue lock for concurrency protection
+  const releaseLock = await acquireResourceLock(resource._id);
+
+  try {
+    const hasOverlap = await isResourceOverlapping(resource._id, newStartAt, newEndAt, booking._id);
+    if (hasOverlap) {
+      const error = new Error('The requested time slot is not available for this resource');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    // Server-calculated pricing
+    const effectivePricePerHour =
+      resource.customPricePerHour !== undefined && resource.customPricePerHour !== null
+        ? resource.customPricePerHour
+        : game.basePricePerHour;
+
+    const newTotalAmount = Math.round(effectivePricePerHour * (newDuration / 60) * 100) / 100;
+
+    // Record audit details before mutating schedule
+    booking.rescheduledFromStartAt = booking.startAt;
+    booking.rescheduledFromEndAt = booking.endAt;
+
+    booking.startAt = newStartAt;
+    booking.endAt = newEndAt;
+    booking.durationMinutes = newDuration;
+    booking.resourceId = resource._id;
+    booking.pricePerHourAtBooking = effectivePricePerHour;
+    booking.totalAmount = newTotalAmount;
+
+    booking.isRescheduled = true;
+    booking.rescheduledAt = new Date();
+    booking.rescheduleCount = (booking.rescheduleCount || 0) + 1;
+    booking.rescheduledBy = userId;
+
+    const updatedBooking = await booking.save();
+
+    // Trigger notification and socket events
+    try {
+      await notificationService.notifyBookingRescheduled(updatedBooking);
+    } catch (notifErr) {
+      console.error('[bookingService] Error sending reschedule notification:', notifErr.message);
+    }
+
+    try {
+      const socketService = require('./socketService');
+      socketService.broadcastBookingRescheduled(updatedBooking);
+    } catch (sockErr) {
+      console.error('[bookingService] Error broadcasting reschedule socket event:', sockErr.message);
+    }
+
+    return updatedBooking;
+  } finally {
+    releaseLock();
+  }
 };
 
 module.exports = {
@@ -445,5 +588,6 @@ module.exports = {
   getUserBookings,
   getUserBookingById,
   cancelUserBooking,
+  rescheduleUserBooking,
   isResourceOverlapping,
 };

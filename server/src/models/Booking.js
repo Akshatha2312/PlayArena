@@ -96,6 +96,31 @@ const bookingSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
     },
+    isRescheduled: {
+      type: Boolean,
+      default: false,
+    },
+    rescheduledAt: {
+      type: Date,
+      default: null,
+    },
+    rescheduledFromStartAt: {
+      type: Date,
+      default: null,
+    },
+    rescheduledFromEndAt: {
+      type: Date,
+      default: null,
+    },
+    rescheduleCount: {
+      type: Number,
+      default: 0,
+    },
+    rescheduledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
   },
   {
     timestamps: true,

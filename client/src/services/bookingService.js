@@ -23,4 +23,11 @@ export const bookingService = {
       body: JSON.stringify({ cancellationReason }),
     });
   },
+
+  rescheduleBooking: async (id, payload) => {
+    return fetchApi(`/bookings/${id}/reschedule`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
 };

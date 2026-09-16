@@ -9,6 +9,7 @@ import { BookingSuccessPage } from '../pages/BookingSuccessPage';
 import { MyBookingsPage } from '../pages/MyBookingsPage';
 import { BookingDetailPage } from '../pages/BookingDetailPage';
 import { MyPaymentsPage } from '../pages/MyPaymentsPage';
+import { MyWaitlistPage } from '../pages/MyWaitlistPage';
 import NotificationsPage from '../pages/NotificationsPage';
 import { ProtectedRoute, PublicOnlyRoute } from './ProtectedRoutes';
 
@@ -54,6 +55,7 @@ export const AppRoutes = () => {
         <Route path="/my-bookings" element={<MyBookingsPage />} />
         <Route path="/my-bookings/:id" element={<BookingDetailPage />} />
         <Route path="/my-payments" element={<MyPaymentsPage />} />
+        <Route path="/my-waitlist" element={<MyWaitlistPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
 

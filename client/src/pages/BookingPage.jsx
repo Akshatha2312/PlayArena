@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { gameService } from '../services/gameService';
 import { bookingService } from '../services/bookingService';
 import { paymentService } from '../services/paymentService';
+import { waitlistService } from '../services/waitlistService';
 import { useAuth } from '../context/AuthContext';
 import { LoadingState, ErrorState } from '../components/StateComponents';
 import { Calendar, Clock, CheckCircle2, AlertTriangle, ShieldCheck, CreditCard } from 'lucide-react';
@@ -55,6 +56,11 @@ export const BookingPage = () => {
   // Submission / Payment State
   const [submitting, setSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState(null);
+
+  // Waitlist State
+  const [waitlistJoining, setWaitlistJoining] = useState(false);
+  const [waitlistSuccess, setWaitlistSuccess] = useState('');
+  const [waitlistError, setWaitlistError] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -238,14 +244,11 @@ export const BookingPage = () => {
             Booking court <strong>{resource.name}</strong> for <strong>{game.name}</strong>
           </p>
 
-          {bookingError && (
-            <div className="alert-box alert-error">
-              <AlertTriangle className="alert-icon" />
-              <span>{bookingError}</span>
-            </div>
-          )}
+          {bookingError && <div className="alert alert-error">{bookingError}</div>}
+          {waitlistSuccess && <div className="alert alert-success">✅ {waitlistSuccess}</div>}
+          {waitlistError && <div className="alert alert-error">⚠️ {waitlistError}</div>}
 
-          <form onSubmit={handleBookingAndPayment} className="booking-form">
+          <form onSubmit={handleBookingAndPayment}>
             <div className="form-group">
               <label htmlFor="booking-date">Select Date</label>
               <input
@@ -292,7 +295,7 @@ export const BookingPage = () => {
               </div>
             </div>
 
-            {/* Availability Indicator */}
+            {/* Availability Indicator & Waitlist Option */}
             <div className="availability-box">
               {checkingAvailability ? (
                 <div className="checking-text">Checking real-time slot availability...</div>
@@ -301,8 +304,18 @@ export const BookingPage = () => {
                   <CheckCircle2 className="status-icon" /> {availabilityMessage}
                 </div>
               ) : isAvailable === false ? (
-                <div className="available-status text-error">
-                  <AlertTriangle className="status-icon" /> {availabilityMessage}
+                <div className="unavailable-container">
+                  <div className="available-status text-error">
+                    <AlertTriangle className="status-icon" /> {availabilityMessage}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleJoinWaitlist}
+                    disabled={waitlistJoining}
+                    className="btn btn-secondary btn-block margin-top-sm"
+                  >
+                    {waitlistJoining ? 'Joining Waitlist...' : '⏳ Join Waitlist for This Slot'}
+                  </button>
                 </div>
               ) : null}
             </div>

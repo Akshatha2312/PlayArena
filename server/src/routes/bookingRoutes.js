@@ -11,5 +11,6 @@ router.get('/', authenticate, authorize('customer'), bookingController.getUserBo
 router.get('/:id', authenticate, authorize('customer'), validateObjectId('id'), bookingController.getUserBookingById);
 router.get('/:id/qr', authenticate, authorize('customer'), validateObjectId('id'), bookingController.getBookingQR);
 router.patch('/:id/cancel', authenticate, authorize('customer'), validateObjectId('id'), bookingController.cancelUserBooking);
+router.patch('/:id/reschedule', authenticate, authorize('customer'), validateObjectId('id'), bookingController.rescheduleUserBooking);
 
 module.exports = router;

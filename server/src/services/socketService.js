@@ -197,6 +197,41 @@ const broadcastCancellation = (booking) => {
   emitEvent('staff:operations', 'schedule:updated', payload);
 };
 
+const broadcastWaitlistAvailable = (waitlistEntry) => {
+  if (!waitlistEntry) return;
+  const entryId = waitlistEntry._id ? waitlistEntry._id.toString() : waitlistEntry.toString();
+  const userId = waitlistEntry.userId ? (waitlistEntry.userId._id || waitlistEntry.userId).toString() : null;
+
+  const payload = {
+    waitlistId: entryId,
+    status: 'notified',
+    notifiedAt: waitlistEntry.notifiedAt || new Date().toISOString(),
+  };
+
+  if (userId) emitEvent(`user:${userId}`, 'waitlist:available', payload);
+};
+
+const broadcastBookingRescheduled = (booking) => {
+  if (!booking) return;
+  const bookingId = booking._id ? booking._id.toString() : booking.toString();
+  const userId = booking.userId ? (booking.userId._id || booking.userId).toString() : null;
+
+  const payload = {
+    bookingId,
+    status: booking.status,
+    startAt: booking.startAt,
+    endAt: booking.endAt,
+    durationMinutes: booking.durationMinutes,
+    isRescheduled: true,
+    rescheduledAt: booking.rescheduledAt || new Date().toISOString(),
+  };
+
+  if (userId) emitEvent(`user:${userId}`, 'booking:rescheduled', payload);
+  emitEvent(`booking:${bookingId}`, 'booking:rescheduled', payload);
+  emitEvent('staff:operations', 'schedule:updated', payload);
+  emitEvent('admin:control', 'dashboard:updated', payload);
+};
+
 const getIO = () => io;
 const getEventBus = () => eventBus;
 
@@ -208,6 +243,8 @@ module.exports = {
   broadcastSessionStarted,
   broadcastSessionCompleted,
   broadcastCancellation,
+  broadcastWaitlistAvailable,
+  broadcastBookingRescheduled,
   getIO,
   getEventBus,
 };

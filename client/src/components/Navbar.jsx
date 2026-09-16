@@ -68,7 +68,11 @@ export const Navbar = () => {
                 Payments
               </Link>
               {user?.role === 'customer' && (
-                <Link to="/notifications" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                <>
+                  <Link to="/my-waitlist" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                    ⏳ Waitlist
+                  </Link>
+                  <Link to="/notifications" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
                   <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     <Bell className="nav-icon" /> Notifications
                     {unreadCount > 0 && (
@@ -88,7 +92,8 @@ export const Navbar = () => {
                       </span>
                     )}
                   </span>
-                </Link>
+                  </Link>
+                </>
               )}
               <div className="user-profile-badge">
                 <User className="nav-icon" />

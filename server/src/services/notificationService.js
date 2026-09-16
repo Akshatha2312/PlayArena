@@ -317,12 +317,83 @@ const markAllAsRead = async (userId) => {
   return { modifiedCount: result.modifiedCount };
 };
 
+/**
+ * Triggered when a waitlist slot becomes available.
+ */
+const notifyWaitlistAvailable = async (waitlistEntry) => {
+  if (!waitlistEntry) return null;
+
+  if (typeof waitlistEntry.populate === 'function') {
+    try {
+      await waitlistEntry.populate(['userId', 'gameId', 'resourceId']);
+    } catch (e) {}
+  }
+
+  const user = waitlistEntry.userId || {};
+  const game = waitlistEntry.gameId || {};
+  const resource = waitlistEntry.resourceId || {};
+
+  const eventKey = `waitlist:${waitlistEntry._id}:available`;
+  const title = 'Waitlist Slot Available!';
+  const message = `A slot for ${game.name || 'Game'} (${resource.name || 'Resource'}) is now available for your requested time.`;
+
+  return sendNotification({
+    userId: user._id || user,
+    type: 'waitlist_available',
+    title,
+    message,
+    eventKey,
+    emailData: {
+      gameName: game.name,
+      resourceName: resource.name,
+    },
+  });
+};
+
+/**
+ * Triggered when a booking is rescheduled.
+ */
+const notifyBookingRescheduled = async (booking) => {
+  if (!booking) return null;
+
+  if (typeof booking.populate === 'function') {
+    try {
+      await booking.populate(['userId', 'gameId', 'resourceId']);
+    } catch (e) {}
+  }
+
+  const user = booking.userId || {};
+  const game = booking.gameId || {};
+  const resource = booking.resourceId || {};
+
+  const eventKey = `booking:${booking._id}:rescheduled:${booking.rescheduleCount || 1}`;
+  const title = 'Booking Rescheduled';
+  const message = `Your booking for ${game.name || 'Game'} (${resource.name || 'Resource'}) has been rescheduled to a new time.`;
+
+  return sendNotification({
+    userId: user._id || user,
+    type: 'booking_rescheduled',
+    title,
+    message,
+    relatedBookingId: booking._id,
+    eventKey,
+    emailData: {
+      bookingId: booking._id,
+      gameName: game.name,
+      resourceName: resource.name,
+      newTotalAmount: booking.totalAmount,
+    },
+  });
+};
+
 module.exports = {
   sendNotification,
   notifyBookingConfirmed,
   notifyPaymentSuccess,
   notifyBookingCancelled,
   notifyBookingReminder,
+  notifyWaitlistAvailable,
+  notifyBookingRescheduled,
   processUpcomingReminders,
   getUserNotifications,
   getUnreadCount,

@@ -88,28 +88,78 @@ export const BookingDetailPage = () => {
     }
   };
 
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleTime, setRescheduleTime] = useState('10:00');
+  const [rescheduleDuration, setRescheduleDuration] = useState(60);
+  const [rescheduling, setRescheduling] = useState(false);
+  const [rescheduleError, setRescheduleError] = useState('');
+  const [rescheduleSuccess, setRescheduleSuccess] = useState('');
+
+  const handleRescheduleSubmit = async (e) => {
+    e.preventDefault();
+    setRescheduling(true);
+    setRescheduleError('');
+    setRescheduleSuccess('');
+
+    try {
+      await bookingService.rescheduleBooking(id, {
+        date: rescheduleDate,
+        startTime: rescheduleTime,
+        durationMinutes: parseInt(rescheduleDuration, 10),
+      });
+      setShowRescheduleModal(false);
+      setRescheduleSuccess('Booking rescheduled successfully!');
+      fetchBooking();
+    } catch (err) {
+      setRescheduleError(err.response?.data?.message || err.message || 'Failed to reschedule booking');
+    } finally {
+      setRescheduling(false);
+    }
+  };
+
   if (loading) return <LoadingState message="Loading booking details..." />;
   if (error) return <ErrorState message={error} />;
   if (!booking) return <ErrorState message="Booking record not found." />;
 
   const isEligibleForCancellation = booking.status === 'confirmed' || booking.status === 'pending';
+  const isEligibleForReschedule = booking.status === 'confirmed' || booking.status === 'pending' || booking.status === 'checked_in';
 
   return (
     <div className="container page-container">
+      {rescheduleSuccess && <div className="alert alert-success margin-bottom-md">✅ {rescheduleSuccess}</div>}
+
       <div className="detail-card">
         <div className="detail-header-row">
           <div>
             <span className={`badge badge-${booking.status === 'confirmed' ? 'confirmed' : booking.status === 'cancelled' ? 'cancelled' : 'pending'}`}>
               {booking.status}
             </span>
+            {booking.isRescheduled && (
+              <span className="badge badge-info margin-left-xs">
+                🔄 Rescheduled ({booking.rescheduleCount})
+              </span>
+            )}
             <h1 className="detail-title">RESERVATION #{id}</h1>
           </div>
 
-          {isEligibleForCancellation && (
-            <button className="btn btn-danger" onClick={() => setShowCancelModal(true)}>
-              <XCircle /> Cancel Booking
-            </button>
-          )}
+          <div className="action-button-group" style={{ display: 'flex', gap: '8px' }}>
+            {isEligibleForReschedule && (
+              <button className="btn btn-secondary" onClick={() => {
+                setRescheduleDate(new Date(booking.startAt).toISOString().split('T')[0]);
+                setRescheduleDuration(booking.durationMinutes);
+                setShowRescheduleModal(true);
+              }}>
+                📅 Reschedule
+              </button>
+            )}
+
+            {isEligibleForCancellation && (
+              <button className="btn btn-danger" onClick={() => setShowCancelModal(true)}>
+                <XCircle /> Cancel Booking
+              </button>
+            )}
+          </div>
         </div>
 
         {/* QR Code Section for Confirmed Bookings */}
@@ -212,6 +262,88 @@ export const BookingDetailPage = () => {
                 </button>
                 <button type="submit" className="btn btn-danger" disabled={cancelling}>
                   {cancelling ? 'Cancelling...' : 'Confirm Cancellation'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Reschedule Booking Modal */}
+      {showRescheduleModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">📅 RESCHEDULE RESERVATION</h3>
+            <p className="modal-description">
+              Select a new date, start time, and duration for your booking.
+            </p>
+
+            {rescheduleError && (
+              <div className="alert-box alert-error">
+                <AlertTriangle className="alert-icon" />
+                <span>{rescheduleError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleRescheduleSubmit}>
+              <div className="form-group margin-bottom">
+                <label htmlFor="reschedule-date">New Date</label>
+                <input
+                  id="reschedule-date"
+                  type="date"
+                  value={rescheduleDate}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group margin-bottom">
+                <label htmlFor="reschedule-time">New Start Time (24h format)</label>
+                <select
+                  id="reschedule-time"
+                  value={rescheduleTime}
+                  onChange={(e) => setRescheduleTime(e.target.value)}
+                  required
+                >
+                  {['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'].map((time) => (
+                    <option key={time} value={time}>
+                      {time} hrs
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group margin-bottom">
+                <label htmlFor="reschedule-duration">Duration</label>
+                <select
+                  id="reschedule-duration"
+                  value={rescheduleDuration}
+                  onChange={(e) => setRescheduleDuration(parseInt(e.target.value, 10))}
+                  required
+                >
+                  {[30, 60, 90, 120, 180, 240].map((dur) => (
+                    <option key={dur} value={dur}>
+                      {dur} minutes
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowRescheduleModal(false)}
+                  disabled={rescheduling}
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={rescheduling}
+                >
+                  {rescheduling ? 'Rescheduling...' : 'Confirm New Schedule'}
                 </button>
               </div>
             </form>

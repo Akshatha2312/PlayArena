@@ -1,0 +1,162 @@
+/* My Waitlist Styling */
+
+.page-my-waitlist {
+  padding-top: 1.5rem;
+  padding-bottom: 3rem;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #475569;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.filter-btn.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.waitlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.waitlist-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.waitlist-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.waitlist-card.card-status-notified {
+  border-left: 4px solid #10b981;
+  background-color: #f0fdf4;
+}
+
+.waitlist-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.game-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.resource-name {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0.2rem 0 0 0;
+}
+
+.resource-code {
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.waitlist-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  color: #334155;
+}
+
+.detail-label {
+  color: #64748b;
+}
+
+.waitlist-alert {
+  background-color: #d1fae5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.waitlist-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.btn-action {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-action.primary {
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+}
+
+.btn-action.primary:hover {
+  background-color: #059669;
+}
+
+.btn-action.danger-outline {
+  background-color: transparent;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+}
+
+.btn-action.danger-outline:hover {
+  background-color: #fef2f2;
+}
