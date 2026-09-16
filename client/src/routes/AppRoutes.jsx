@@ -35,6 +35,10 @@ import { AdminPaymentsPage } from '../pages/admin/AdminPaymentsPage';
 import { AdminAnalyticsPage } from '../pages/admin/AdminAnalyticsPage';
 import { VenueMapPage } from '../pages/VenueMapPage';
 import { AdminVenueLayoutPage } from '../pages/admin/AdminVenueLayoutPage';
+import { MySupportPage } from '../pages/MySupportPage';
+import { SupportDetailPage } from '../pages/SupportDetailPage';
+import { StaffSupportQueuePage } from '../pages/staff/StaffSupportQueuePage';
+import { AdminSupportPage } from '../pages/admin/AdminSupportPage';
 import { AdminProtectedRoute, AdminPublicOnlyRoute } from './AdminProtectedRoutes';
 
 import { EmptyState } from '../components/StateComponents';
@@ -66,6 +70,8 @@ export const AppRoutes = () => {
         <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
         <Route path="/my-invoices" element={<MyInvoicesPage />} />
         <Route path="/my-invoices/:id" element={<InvoiceDetailPage />} />
+        <Route path="/my-support" element={<MySupportPage />} />
+        <Route path="/support/:id" element={<SupportDetailPage />} />
       </Route>
 
       {/* Staff Operations Public Routes */}
@@ -79,6 +85,7 @@ export const AppRoutes = () => {
         <Route path="/staff/schedule" element={<StaffSchedulePage />} />
         <Route path="/staff/check-in" element={<StaffCheckInPage />} />
         <Route path="/staff/sessions" element={<StaffSessionsPage />} />
+        <Route path="/staff/support" element={<StaffSupportQueuePage />} />
         <Route path="/staff/bookings/:id" element={<StaffBookingDetailPage />} />
       </Route>
 
@@ -99,6 +106,7 @@ export const AppRoutes = () => {
         <Route path="/admin/customers" element={<AdminCustomersPage />} />
         <Route path="/admin/staff" element={<AdminStaffPage />} />
         <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+        <Route path="/admin/support" element={<AdminSupportPage />} />
       </Route>
 
       {/* 404 Route */}

@@ -220,6 +220,12 @@ export const BookingDetailPage = () => {
           </div>
 
           <div className="action-button-group" style={{ display: 'flex', gap: '8px' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => navigate(`/my-support?bookingId=${id}&bookingRef=${booking.bookingReference}`)}
+            >
+              💬 Report an Issue
+            </button>
             {booking.resourceId && (
               <button
                 className="btn btn-secondary"

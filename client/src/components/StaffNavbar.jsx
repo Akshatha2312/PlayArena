@@ -50,6 +50,12 @@ export const StaffNavbar = () => {
             ⏱️ Sessions
           </Link>
           <Link
+            to="/staff/support"
+            className={`staff-nav-item ${isActive('/staff/support') ? 'active' : ''}`}
+          >
+            💬 Support
+          </Link>
+          <Link
             to="/venue"
             className={`staff-nav-item ${isActive('/venue') ? 'active' : ''}`}
           >

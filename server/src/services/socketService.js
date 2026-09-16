@@ -243,6 +243,58 @@ const broadcastVenueLayoutUpdated = (layoutInfo) => {
   emitEvent('admin:control', 'venue:layout_updated', payload);
 };
 
+const broadcastSupportIssueCreated = (issue) => {
+  if (!issue) return;
+  const payload = {
+    issueId: issue._id ? issue._id.toString() : issue.toString(),
+    issueNumber: issue.issueNumber,
+    subject: issue.subject,
+    status: issue.status,
+    createdAt: issue.createdAt || new Date().toISOString(),
+  };
+  emitEvent('staff:operations', 'support:issue_created', payload);
+  emitEvent('admin:control', 'support:issue_created', payload);
+};
+
+const broadcastSupportMessage = (issueId, message) => {
+  if (!issueId || !message) return;
+  const idStr = issueId._id ? issueId._id.toString() : issueId.toString();
+
+  // Internal notes are only broadcast to staff/admin operational rooms
+  if (message.isInternal) {
+    emitEvent('staff:operations', 'support:internal_note', { issueId: idStr, message });
+    emitEvent('admin:control', 'support:internal_note', { issueId: idStr, message });
+    return;
+  }
+
+  const payload = {
+    issueId: idStr,
+    messageId: message._id,
+    senderRole: message.senderRole,
+    message: message.message,
+    createdAt: message.createdAt || new Date().toISOString(),
+  };
+
+  emitEvent(`issue:${idStr}`, 'support:message_created', payload);
+  emitEvent('staff:operations', 'support:message_created', payload);
+  emitEvent('admin:control', 'support:message_created', payload);
+};
+
+const broadcastSupportStatusUpdated = (issue) => {
+  if (!issue) return;
+  const idStr = issue._id ? issue._id.toString() : issue.toString();
+  const payload = {
+    issueId: idStr,
+    issueNumber: issue.issueNumber,
+    status: issue.status,
+    updatedAt: new Date().toISOString(),
+  };
+
+  emitEvent(`issue:${idStr}`, 'support:status_updated', payload);
+  emitEvent('staff:operations', 'support:status_updated', payload);
+  emitEvent('admin:control', 'support:status_updated', payload);
+};
+
 const getIO = () => io;
 const getEventBus = () => eventBus;
 
@@ -257,6 +309,9 @@ module.exports = {
   broadcastWaitlistAvailable,
   broadcastBookingRescheduled,
   broadcastVenueLayoutUpdated,
+  broadcastSupportIssueCreated,
+  broadcastSupportMessage,
+  broadcastSupportStatusUpdated,
   getIO,
   getEventBus,
 };

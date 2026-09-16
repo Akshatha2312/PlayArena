@@ -16,13 +16,17 @@ process.env.RAZORPAY_KEY_ID = 'rzp_test_mock_key_id_123';
 process.env.RAZORPAY_KEY_SECRET = 'rzp_test_mock_secret_456';
 process.env.RAZORPAY_WEBHOOK_SECRET = 'rzp_test_mock_webhook_secret_789';
 
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'test_jwt_secret_play_arena_phase_key';
+}
+
 async function runPhase5Tests() {
   console.log('==================================================');
   console.log('STARTING PHASE 5 AUTOMATED INTEGRATION TEST SUITE');
   console.log('==================================================');
 
   // Connect DB or setup mock
-  const dbUri = process.env.MONGODB_URI;
+  const dbUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/playarena_test_p5';
   try {
     await mongoose.connect(dbUri, { serverSelectionTimeoutMS: 2000 });
     console.log(' Connected to MongoDB:', mongoose.connection.name);
@@ -33,6 +37,7 @@ async function runPhase5Tests() {
     await Booking.deleteMany({});
     await Payment.deleteMany({});
   } catch (err) {
+    mongoose.set('bufferCommands', false);
     console.log(`[INFO] Live MongoDB connection unavailable (${err.message}). Running with mock storage.`);
   }
 

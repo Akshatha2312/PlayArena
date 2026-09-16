@@ -79,6 +79,12 @@ export const AdminNavbar = () => {
           >
             💳 Payments
           </Link>
+          <Link
+            to="/admin/support"
+            className={`admin-nav-item ${isActive('/admin/support') ? 'active' : ''}`}
+          >
+            💬 Support
+          </Link>
         </nav>
 
         <div className="admin-user-controls">

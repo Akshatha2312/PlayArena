@@ -75,6 +75,9 @@ export const Navbar = () => {
                   <Link to="/my-invoices" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
                     🧾 Invoices
                   </Link>
+                  <Link to="/my-support" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
+                    💬 Support
+                  </Link>
                   <Link to="/my-waitlist" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
                     ⏳ Waitlist
                   </Link>
