@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { waitlistService } from '../services/waitlistService';
 import { LoadingState, ErrorState, EmptyState } from '../components/StateComponents';
+import { Pagination } from '../components/Pagination';
 import './MyWaitlistPage.css';
 
 export const MyWaitlistPage = () => {
@@ -10,6 +11,8 @@ export const MyWaitlistPage = () => {
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchWaitlists = async () => {
     try {
@@ -44,26 +47,29 @@ export const MyWaitlistPage = () => {
   if (loading && waitlists.length === 0) return <LoadingState message="Loading your waitlist entries..." />;
   if (error && waitlists.length === 0) return <ErrorState message={error} onRetry={fetchWaitlists} />;
 
+  const totalPages = Math.ceil(waitlists.length / itemsPerPage) || 1;
+  const paginatedWaitlists = waitlists.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="container page-container page-my-waitlist">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">⏳ My Waitlists</h1>
-          <p className="page-subtitle">Track requested time slots and notifications</p>
-        </div>
+      <div className="compact-page-header">
+        <h1 className="page-title">My Waitlists</h1>
+        <p className="page-subtitle">Track requested court time slots and availability notifications.</p>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="filter-tabs">
-        {['all', 'waiting', 'notified', 'cancelled'].map((st) => (
-          <button
-            key={st}
-            className={`filter-btn ${statusFilter === st ? 'active' : ''}`}
-            onClick={() => setStatusFilter(st)}
-          >
-            {st.charAt(0).toUpperCase() + st.slice(1)}
-          </button>
-        ))}
+      {/* Filter Toolbar */}
+      <div className="compact-toolbar">
+        <div className="compact-toolbar-left">
+          {['all', 'waiting', 'notified', 'cancelled'].map((st) => (
+            <button
+              key={st}
+              className={`filter-btn ${statusFilter === st ? 'active' : ''}`}
+              onClick={() => { setStatusFilter(st); setCurrentPage(1); }}
+            >
+              {st.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
       {waitlists.length === 0 ? (
@@ -74,74 +80,68 @@ export const MyWaitlistPage = () => {
           actionText="Explore Games Catalog"
         />
       ) : (
-        <div className="waitlist-grid">
-          {waitlists.map((entry) => {
-            const gameName = entry.gameId?.name || 'Game';
-            const resourceName = entry.resourceId?.name || 'Resource';
-            const resourceCode = entry.resourceId?.code || '';
-            const startDate = new Date(entry.startAt).toLocaleDateString();
-            const startTime = new Date(entry.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const endTime = new Date(entry.endAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        <>
+          <div className="waitlist-list-dense">
+            {paginatedWaitlists.map((entry) => {
+              const gameName = entry.gameId?.name || 'Game';
+              const resourceName = entry.resourceId?.name || 'Resource';
+              const resourceCode = entry.resourceId?.code ? ` (${entry.resourceId.code})` : '';
+              const startDate = new Date(entry.startAt).toLocaleDateString([], { month: 'short', day: 'numeric' });
+              const startTime = new Date(entry.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              const endTime = new Date(entry.endAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              const isCanLeave = entry.status === 'waiting' || entry.status === 'notified';
+              const statusClass = entry.status === 'notified' ? 'badge-confirmed' : entry.status === 'cancelled' ? 'badge-cancelled' : 'badge-pending';
 
-            const isCanLeave = entry.status === 'waiting' || entry.status === 'notified';
-
-            return (
-              <div key={entry._id} className={`waitlist-card card-status-${entry.status}`}>
-                <div className="waitlist-card-header">
-                  <div>
-                    <h3 className="game-name">{gameName}</h3>
-                    <p className="resource-name">
-                      {resourceName} {resourceCode && <span className="resource-code">({resourceCode})</span>}
-                    </p>
+              return (
+                <div key={entry._id} className="compact-card-item">
+                  <div className="compact-card-header">
+                    <div>
+                      <strong className="game-name">{gameName}</strong>
+                      <span className="text-dim text-xs" style={{ marginLeft: 8 }}>
+                        {resourceName}{resourceCode}
+                      </span>
+                    </div>
+                    <span className={`badge-compact ${statusClass}`}>
+                      {entry.status === 'notified' ? '🔔 Slot Available!' : entry.status}
+                    </span>
                   </div>
-                  <span className={`status-pill pill-${entry.status}`}>
-                    {entry.status === 'notified' ? '🔔 Slot Available!' : entry.status}
-                  </span>
+                  <div className="compact-card-meta">
+                    <span>📅 {startDate}</span>
+                    <span>⏰ {startTime} - {endTime} ({entry.durationMinutes}m)</span>
+                    <span className="text-dim">Joined: {new Date(entry.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="compact-card-actions">
+                    {entry.status === 'notified' && (
+                      <Link to="/games" className="btn-action primary">
+                        Book Now →
+                      </Link>
+                    )}
+                    {isCanLeave && (
+                      <button
+                        onClick={() => handleLeaveWaitlist(entry._id)}
+                        disabled={actionLoadingId === entry._id}
+                        className="btn-action danger-outline"
+                      >
+                        {actionLoadingId === entry._id ? 'Leaving...' : 'Leave Waitlist'}
+                      </button>
+                    )}
+                  </div>
                 </div>
+              );
+            })}
+          </div>
 
-                <div className="waitlist-details">
-                  <div className="detail-row">
-                    <span className="detail-label">📅 Date:</span>
-                    <strong>{startDate}</strong>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">⏰ Time Slot:</span>
-                    <strong>{startTime} - {endTime} ({entry.durationMinutes} mins)</strong>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Joined On:</span>
-                    <span>{new Date(entry.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                {entry.status === 'notified' && (
-                  <div className="waitlist-alert">
-                    ⚡ Great news! A slot opened up for this time. Go to the game catalog to book your slot now.
-                  </div>
-                )}
-
-                <div className="waitlist-card-actions">
-                  {entry.status === 'notified' && (
-                    <Link to={`/games`} className="btn-action primary">
-                      Book Now →
-                    </Link>
-                  )}
-
-                  {isCanLeave && (
-                    <button
-                      onClick={() => handleLeaveWaitlist(entry._id)}
-                      disabled={actionLoadingId === entry._id}
-                      className="btn-action danger-outline"
-                    >
-                      {actionLoadingId === entry._id ? 'Leaving...' : 'Leave Waitlist'}
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={waitlists.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        </>
       )}
     </div>
   );
 };
+
+

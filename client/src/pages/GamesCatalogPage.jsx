@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { gameService } from '../services/gameService';
 import { GameCard } from '../components/GameCard';
 import { LoadingState, ErrorState, EmptyState } from '../components/StateComponents';
-import { Trophy, Filter } from 'lucide-react';
+import { Pagination } from '../components/Pagination';
+import { Filter } from 'lucide-react';
 import './GamesCatalogPage.css';
 
 const CATEGORIES = [
@@ -29,7 +30,7 @@ export const GamesCatalogPage = () => {
     setLoading(true);
     setError(null);
 
-    const query = { page: currentPage, limit: 9 };
+    const query = { page: currentPage, limit: 12 };
     if (selectedCategory !== 'all') {
       query.category = selectedCategory;
     }
@@ -65,19 +66,17 @@ export const GamesCatalogPage = () => {
 
   return (
     <div className="container page-container">
-      <div className="catalog-header">
-        <div>
-          <h1 className="page-title">GAMES & ACTIVITIES CATALOG</h1>
-          <p className="page-subtitle">Select an indoor game or sport to explore available courts, tables, and gaming rigs.</p>
-        </div>
+      <div className="compact-page-header">
+        <h1 className="page-title">GAMES & ACTIVITIES CATALOG</h1>
+        <p className="page-subtitle">Select an indoor game or sport to explore available courts, tables, and gaming rigs.</p>
       </div>
 
-      {/* Category Filter Bar */}
-      <div className="filter-bar">
-        <span className="filter-label">
-          <Filter className="filter-icon" /> Filter Category:
-        </span>
-        <div className="category-pills">
+      {/* Compact Category Filter Bar */}
+      <div className="compact-toolbar">
+        <div className="compact-toolbar-left">
+          <span className="filter-label">
+            <Filter size={15} style={{ color: '#00e5ff', marginRight: 4 }} /> Filter Category:
+          </span>
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
@@ -108,30 +107,16 @@ export const GamesCatalogPage = () => {
             ))}
           </div>
 
-          {/* Pagination Controls */}
-          {pagination.totalPages > 1 && (
-            <div className="pagination-bar">
-              <button
-                className="btn btn-secondary"
-                disabled={currentPage <= 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </button>
-              <span className="pagination-info">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              <button
-                className="btn btn-secondary"
-                disabled={currentPage >= pagination.totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={pagination.page || currentPage}
+            totalPages={pagination.totalPages || 1}
+            totalItems={pagination.total}
+            itemsPerPage={pagination.limit || 12}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
     </div>
   );
 };
+

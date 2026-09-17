@@ -18,7 +18,7 @@ export const AdminCustomersPage = () => {
   const fetchCustomers = async (page = 1) => {
     try {
       setLoading(true);
-      const res = await adminService.getCustomers({ page, search });
+      const res = await adminService.getCustomers({ page, limit: 20, search });
       setCustomers(res.data?.customers || []);
       setPagination(res.data?.pagination || { page: 1, totalPages: 1, total: 0 });
       setError('');
@@ -52,23 +52,26 @@ export const AdminCustomersPage = () => {
   };
 
   return (
-    <div className="admin-page-container">
-      <div className="admin-header-actions">
-        <div>
-          <h1 className="admin-title">👥 Customer Directory</h1>
-          <p className="admin-subtitle">Inspect registered player profiles and historical booking activity</p>
-        </div>
+    <div className="container page-container">
+      <div className="compact-page-header">
+        <h1 className="page-title">CUSTOMER DIRECTORY</h1>
+        <p className="page-subtitle">Inspect registered player profiles and historical booking activity.</p>
+      </div>
 
-        <form onSubmit={handleSearchSubmit} className="search-form" style={{ display: 'flex', gap: '0.5rem' }}>
-          <input
-            type="text"
-            placeholder="Search Name, Email, or Phone..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="admin-input-search"
-          />
-          <button type="submit" className="btn-admin-secondary">Search</button>
-        </form>
+      <div className="compact-toolbar">
+        <div className="compact-toolbar-left">
+          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.4rem' }}>
+            <input
+              type="text"
+              placeholder="Search Name, Email, or Phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="compact-input"
+              style={{ minWidth: 240 }}
+            />
+            <button type="submit" className="btn btn-secondary btn-sm">Search</button>
+          </form>
+        </div>
       </div>
 
       {loading ? (
@@ -79,15 +82,15 @@ export const AdminCustomersPage = () => {
         <EmptyState title="No Customers Found" message="No customer accounts match your search." />
       ) : (
         <>
-          <div className="table-responsive">
-            <table className="admin-table">
+          <div className="dense-table-container">
+            <table className="dense-table">
               <thead>
                 <tr>
-                  <th>Customer Name</th>
-                  <th>Email Address</th>
-                  <th>Phone Number</th>
-                  <th>Joined Date</th>
-                  <th>Actions</th>
+                  <th>CUSTOMER NAME</th>
+                  <th>EMAIL ADDRESS</th>
+                  <th>PHONE</th>
+                  <th>JOINED DATE</th>
+                  <th style={{ textAlign: 'right' }}>ACTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -97,11 +100,11 @@ export const AdminCustomersPage = () => {
                       <strong>{c.name}</strong>
                     </td>
                     <td>{c.email}</td>
-                    <td>{c.phone || 'N/A'}</td>
+                    <td>{c.phone || '—'}</td>
                     <td>{new Date(c.createdAt).toLocaleDateString()}</td>
-                    <td>
+                    <td style={{ textAlign: 'right' }}>
                       <button
-                        className="btn-table-action btn-view"
+                        className="btn-action secondary"
                         onClick={() => handleOpenDetail(c._id)}
                       >
                         Profile & History
@@ -117,11 +120,12 @@ export const AdminCustomersPage = () => {
             currentPage={pagination.page || 1}
             totalPages={pagination.totalPages || 1}
             totalItems={pagination.total}
-            itemsPerPage={10}
+            itemsPerPage={pagination.limit || 20}
             onPageChange={(p) => fetchCustomers(p)}
           />
         </>
       )}
+
 
       {/* Customer Detail Modal */}
       {selectedCustomer && (

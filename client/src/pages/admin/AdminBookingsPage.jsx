@@ -21,6 +21,7 @@ export const AdminBookingsPage = () => {
       setLoading(true);
       const res = await adminService.getAllBookings({
         page,
+        limit: 20,
         status: statusFilter,
         search,
         date,
@@ -57,36 +58,39 @@ export const AdminBookingsPage = () => {
   };
 
   return (
-    <div className="admin-page-container">
-      <div className="admin-header-actions">
-        <div>
-          <h1 className="admin-title">📅 Master Bookings Registry</h1>
-          <p className="admin-subtitle">Inspect historical and active center bookings across all games</p>
-        </div>
+    <div className="container page-container">
+      <div className="compact-page-header">
+        <h1 className="page-title">MASTER BOOKINGS REGISTRY</h1>
+        <p className="page-subtitle">Inspect historical and active center bookings across all games.</p>
+      </div>
 
-        <div className="admin-filter-bar">
-          <form onSubmit={handleSearchSubmit} className="search-form" style={{ display: 'flex', gap: '0.5rem' }}>
+      <div className="compact-toolbar">
+        <div className="compact-toolbar-left">
+          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.4rem' }}>
             <input
               type="text"
-              placeholder="Booking ID or Customer..."
+              placeholder="Search ID or Customer..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="admin-input-search"
+              className="compact-input"
+              style={{ minWidth: 200 }}
             />
-            <button type="submit" className="btn-admin-secondary">Search</button>
+            <button type="submit" className="btn btn-secondary btn-sm">Search</button>
           </form>
+        </div>
 
+        <div className="compact-toolbar-right">
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="admin-date-input"
+            className="compact-input"
           />
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="admin-select"
+            className="compact-select"
           >
             <option value="all">All Statuses</option>
             <option value="confirmed">Confirmed</option>
@@ -107,53 +111,54 @@ export const AdminBookingsPage = () => {
         <EmptyState title="No Bookings Found" message="No booking records match the selected filters." />
       ) : (
         <>
-          <div className="table-responsive">
-            <table className="admin-table">
+          <div className="dense-table-container">
+            <table className="dense-table">
               <thead>
                 <tr>
-                  <th>Booking ID</th>
-                  <th>Customer</th>
-                  <th>Game & Resource</th>
-                  <th>Time Slot</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>BOOKING ID</th>
+                  <th>CUSTOMER</th>
+                  <th>GAME & RESOURCE</th>
+                  <th>TIME SLOT</th>
+                  <th>AMOUNT</th>
+                  <th>STATUS</th>
+                  <th style={{ textAlign: 'right' }}>ACTION</th>
                 </tr>
               </thead>
               <tbody>
                 {bookings.map((b) => {
-                  const startTime = new Date(b.startAt).toLocaleString();
+                  const startTime = new Date(b.startAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' · ' + new Date(b.startAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  const statusClass = b.status === 'confirmed' ? 'badge-confirmed' : b.status === 'checked_in' || b.status === 'in_progress' ? 'badge-paid' : b.status === 'completed' ? 'badge-completed' : 'badge-cancelled';
+
                   return (
                     <tr key={b._id}>
                       <td>
-                        <span className="font-mono text-dim">#{b._id}</span>
+                        <span className="font-mono text-dim">#{b._id.substring(0, 8)}</span>
                       </td>
                       <td>
                         <strong>{b.userId?.name || 'Walk-in Guest'}</strong>
-                        <div className="sub-text">{b.userId?.email}</div>
+                        <span className="text-dim text-xs" style={{ marginLeft: 6 }}>{b.userId?.email}</span>
                       </td>
                       <td>
-                        <div><strong>{b.gameId?.title || b.gameId?.name || 'Game'}</strong></div>
-                        <div className="sub-text">📍 {b.resourceId?.name}</div>
+                        <strong>{b.gameId?.title || b.gameId?.name || 'Game'}</strong>
+                        <span className="text-dim text-xs" style={{ marginLeft: 6 }}>📍 {b.resourceId?.name}</span>
                       </td>
                       <td>
-                        <div>{startTime}</div>
-                        <div className="sub-text">{b.durationMinutes} Mins</div>
+                        {startTime} ({b.durationMinutes}m)
                       </td>
                       <td>
                         <strong>₹{b.totalAmount}</strong>
                       </td>
                       <td>
-                        <span className={`status-pill pill-${b.status}`}>
+                        <span className={`badge-compact ${statusClass}`}>
                           {b.status.replace('_', ' ').toUpperCase()}
                         </span>
                       </td>
-                      <td>
+                      <td style={{ textAlign: 'right' }}>
                         <button
-                          className="btn-table-action btn-view"
+                          className="btn-action secondary"
                           onClick={() => handleOpenDetail(b._id)}
                         >
-                          Inspect Detail
+                          Inspect
                         </button>
                       </td>
                     </tr>
@@ -167,11 +172,12 @@ export const AdminBookingsPage = () => {
             currentPage={pagination.page || 1}
             totalPages={pagination.totalPages || 1}
             totalItems={pagination.total}
-            itemsPerPage={10}
+            itemsPerPage={pagination.limit || 20}
             onPageChange={(p) => fetchBookings(p)}
           />
         </>
       )}
+
 
       {/* Booking Detail Modal */}
       {selectedBooking && (

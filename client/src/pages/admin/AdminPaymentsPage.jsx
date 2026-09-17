@@ -19,6 +19,7 @@ export const AdminPaymentsPage = () => {
       setLoading(true);
       const res = await adminService.getAllPayments({
         page,
+        limit: 20,
         status: statusFilter,
         search,
       });
@@ -51,29 +52,32 @@ export const AdminPaymentsPage = () => {
   };
 
   return (
-    <div className="admin-page-container">
-      <div className="admin-header-actions">
-        <div>
-          <h1 className="admin-title">💳 Financial Transactions Registry</h1>
-          <p className="admin-subtitle">Inspect Razorpay payment orders, transaction statuses, and amounts</p>
-        </div>
+    <div className="container page-container">
+      <div className="compact-page-header">
+        <h1 className="page-title">FINANCIAL TRANSACTIONS REGISTRY</h1>
+        <p className="page-subtitle">Inspect Razorpay payment orders, transaction statuses, and amounts.</p>
+      </div>
 
-        <div className="admin-filter-bar">
-          <form onSubmit={handleSearchSubmit} className="search-form" style={{ display: 'flex', gap: '0.5rem' }}>
+      <div className="compact-toolbar">
+        <div className="compact-toolbar-left">
+          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.4rem' }}>
             <input
               type="text"
               placeholder="Order ID or Payment ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="admin-input-search"
+              className="compact-input"
+              style={{ minWidth: 200 }}
             />
-            <button type="submit" className="btn-admin-secondary">Search</button>
+            <button type="submit" className="btn btn-secondary btn-sm">Search</button>
           </form>
+        </div>
 
+        <div className="compact-toolbar-right">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="admin-select"
+            className="compact-select"
           >
             <option value="all">All Statuses</option>
             <option value="paid">Paid</option>
@@ -93,52 +97,55 @@ export const AdminPaymentsPage = () => {
         <EmptyState title="No Payments Found" message="No payment transactions match the selected query." />
       ) : (
         <>
-          <div className="table-responsive">
-            <table className="admin-table">
+          <div className="dense-table-container">
+            <table className="dense-table">
               <thead>
                 <tr>
-                  <th>Order / Payment ID</th>
-                  <th>Customer</th>
-                  <th>Amount</th>
-                  <th>Provider</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Actions</th>
+                  <th>ORDER / PAYMENT ID</th>
+                  <th>CUSTOMER</th>
+                  <th>AMOUNT</th>
+                  <th>PROVIDER</th>
+                  <th>STATUS</th>
+                  <th>DATE</th>
+                  <th style={{ textAlign: 'right' }}>ACTION</th>
                 </tr>
               </thead>
               <tbody>
-                {payments.map((p) => (
-                  <tr key={p._id}>
-                    <td>
-                      <div><strong>Order:</strong> {p.providerOrderId}</div>
-                      {p.providerPaymentId && <div className="sub-text">Pay: {p.providerPaymentId}</div>}
-                    </td>
-                    <td>
-                      <strong>{p.userId?.name || 'Customer'}</strong>
-                      <div className="sub-text">{p.userId?.email}</div>
-                    </td>
-                    <td>
-                      <strong>₹{p.amount}</strong> {p.currency}
-                    </td>
-                    <td>
-                      <span className="category-badge">{p.provider}</span>
-                    </td>
-                    <td>
-                      <span className={`status-pill pill-${p.status}`}>
-                        {p.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td>{new Date(p.createdAt).toLocaleString()}</td>
-                    <td>
-                      <button
-                        className="btn-table-action btn-view"
-                        onClick={() => handleOpenDetail(p._id)}
-                      >
-                        Inspect
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {payments.map((p) => {
+                  const statusClass = p.status === 'paid' ? 'badge-paid' : p.status === 'failed' ? 'badge-failed' : 'badge-pending';
+                  return (
+                    <tr key={p._id}>
+                      <td>
+                        <strong>Order:</strong> <span className="font-mono text-dim">{p.providerOrderId}</span>
+                        {p.providerPaymentId && <span className="text-dim text-xs" style={{ marginLeft: 6 }}>Pay: {p.providerPaymentId}</span>}
+                      </td>
+                      <td>
+                        <strong>{p.userId?.name || 'Customer'}</strong>
+                        <span className="text-dim text-xs" style={{ marginLeft: 6 }}>{p.userId?.email}</span>
+                      </td>
+                      <td>
+                        <strong>₹{p.amount} {p.currency || 'INR'}</strong>
+                      </td>
+                      <td>
+                        <span className="badge-compact" style={{ background: 'rgba(100,116,139,0.2)', color: '#94a3b8' }}>{p.provider || 'Razorpay'}</span>
+                      </td>
+                      <td>
+                        <span className={`badge-compact ${statusClass}`}>
+                          {p.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>{new Date(p.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button
+                          className="btn-action secondary"
+                          onClick={() => handleOpenDetail(p._id)}
+                        >
+                          Inspect
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -147,11 +154,12 @@ export const AdminPaymentsPage = () => {
             currentPage={pagination.page || 1}
             totalPages={pagination.totalPages || 1}
             totalItems={pagination.total}
-            itemsPerPage={10}
+            itemsPerPage={pagination.limit || 20}
             onPageChange={(p) => fetchPayments(p)}
           />
         </>
       )}
+
 
       {/* Payment Detail Modal */}
       {selectedPayment && (

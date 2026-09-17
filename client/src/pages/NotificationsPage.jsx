@@ -17,7 +17,7 @@ const NotificationsPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const params = { page, limit: 10 };
+      const params = { page, limit: 15 };
       if (filter === 'unread') {
         params.isRead = 'false';
       }
@@ -72,84 +72,68 @@ const NotificationsPage = () => {
   const getTypeBadge = (type) => {
     switch (type) {
       case 'booking_confirmed':
-        return <span style={{ backgroundColor: '#0284c7', color: '#ffffff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>CONFIRMED</span>;
+        return <span className="badge-compact badge-confirmed">CONFIRMED</span>;
       case 'payment_success':
-        return <span style={{ backgroundColor: '#16a34a', color: '#ffffff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>PAYMENT</span>;
+        return <span className="badge-compact badge-paid">PAYMENT</span>;
       case 'booking_cancelled':
-        return <span style={{ backgroundColor: '#dc2626', color: '#ffffff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>CANCELLED</span>;
+        return <span className="badge-compact badge-cancelled">CANCELLED</span>;
       case 'booking_reminder':
-        return <span style={{ backgroundColor: '#d97706', color: '#ffffff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>REMINDER</span>;
+        return <span className="badge-compact badge-pending">REMINDER</span>;
       default:
-        return <span style={{ backgroundColor: '#64748b', color: '#ffffff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>INFO</span>;
+        return <span className="badge-compact" style={{ background: 'rgba(100,116,139,0.2)', color: '#94a3b8' }}>INFO</span>;
     }
   };
 
   return (
     <div className="container page-container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+      <div className="compact-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.75rem', color: '#f8fafc' }}>NOTIFICATIONS</h1>
-          <p style={{ margin: '4px 0 0 0', color: '#94a3b8', fontSize: '0.9rem' }}>
-            Stay updated with your court bookings, payments, and system notifications.
-          </p>
+          <h1 className="page-title">NOTIFICATIONS</h1>
+          <p className="page-subtitle">Stay updated with your court bookings, payments, and system updates.</p>
         </div>
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllAsRead}
             disabled={actionLoading}
-            className="btn btn-primary"
+            className="btn btn-primary btn-sm"
           >
             {actionLoading ? 'Updating...' : 'Mark All as Read'}
           </button>
         )}
       </div>
 
-      {/* Filter Tabs */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', borderBottom: '1px solid #262936', paddingBottom: '12px' }}>
-        <button
-          onClick={() => setFilter('all')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: filter === 'all' ? '#00e5ff' : '#9ca3af',
-            borderBottom: filter === 'all' ? '2px solid #00e5ff' : 'none',
-            paddingBottom: '4px',
-            fontWeight: '600',
-            cursor: 'pointer',
-          }}
-        >
-          All Notifications
-        </button>
-        <button
-          onClick={() => setFilter('unread')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: filter === 'unread' ? '#00e5ff' : '#9ca3af',
-            borderBottom: filter === 'unread' ? '2px solid #00e5ff' : 'none',
-            paddingBottom: '4px',
-            fontWeight: '600',
-            cursor: 'pointer',
-          }}
-        >
-          Unread {unreadCount > 0 && `(${unreadCount})`}
-        </button>
+      {/* Filter Tabs Toolbar */}
+      <div className="compact-toolbar">
+        <div className="compact-toolbar-left">
+          <button
+            onClick={() => setFilter('all')}
+            className={`tab-btn ${filter === 'all' ? 'active' : ''}`}
+          >
+            All Notifications
+          </button>
+          <button
+            onClick={() => setFilter('unread')}
+            className={`tab-btn ${filter === 'unread' ? 'active' : ''}`}
+          >
+            Unread {unreadCount > 0 && `(${unreadCount})`}
+          </button>
+        </div>
       </div>
 
       {/* Loading State */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: '#94a3b8' }}>
+        <div style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8' }}>
           <p>Loading notifications...</p>
         </div>
       )}
 
       {/* Error State */}
       {error && !loading && (
-        <div style={{ backgroundColor: '#450a0a', border: '1px solid #991b1b', color: '#fca5a5', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+        <div style={{ backgroundColor: '#450a0a', border: '1px solid #991b1b', color: '#fca5a5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
           <p style={{ margin: 0 }}>{error}</p>
           <button
             onClick={() => fetchNotifications(currentPage)}
-            style={{ marginTop: '12px', backgroundColor: '#991b1b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
+            style={{ marginTop: '8px', backgroundColor: '#991b1b', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}
           >
             Retry
           </button>
@@ -158,58 +142,62 @@ const NotificationsPage = () => {
 
       {/* Empty State */}
       {!loading && !error && notifications.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 16px', backgroundColor: '#12141a', borderRadius: '8px', border: '1px solid #262936' }}>
-          <h3 style={{ color: '#e2e8f0', marginBottom: '8px' }}>No notifications found</h3>
-          <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>
+        <div style={{ textAlign: 'center', padding: '40px 16px', backgroundColor: '#12141a', borderRadius: '8px', border: '1px solid #262936' }}>
+          <h3 style={{ color: '#e2e8f0', marginBottom: '4px' }}>No notifications found</h3>
+          <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>
             {filter === 'unread' ? "You don't have any unread notifications." : "You don't have any notifications right now."}
           </p>
         </div>
       )}
 
-      {/* Notification List */}
+      {/* Compact Notification Item Rows */}
       {!loading && !error && notifications.length > 0 && (
         <>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {notifications.map((item) => (
               <div
                 key={item._id}
                 style={{
-                  backgroundColor: item.isRead ? '#12141a' : '#1a1d26',
+                  backgroundColor: item.isRead ? '#12141a' : '#181b24',
                   border: item.isRead ? '1px solid #262936' : '1px solid #00e5ff',
-                  borderRadius: '8px',
-                  padding: '16px',
+                  borderRadius: '6px',
+                  padding: '0.65rem 0.85rem',
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                  transition: 'all 0.2s ease',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.75rem',
+                  flexWrap: 'wrap',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {getTypeBadge(item.type)}
-                    <h3 style={{ margin: 0, fontSize: '1rem', color: item.isRead ? '#cbd5e1' : '#ffffff' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: '240px' }}>
+                  {!item.isRead && (
+                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#00e5ff', shrink: 0 }} />
+                  )}
+                  {getTypeBadge(item.type)}
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '0.85rem', color: item.isRead ? '#e2e8f0' : '#ffffff', fontWeight: 600 }}>
                       {item.title}
-                    </h3>
+                    </h4>
+                    <p style={{ margin: '2px 0 0 0', color: '#9ca3af', fontSize: '0.8rem' }}>
+                      {item.message}
+                    </p>
                   </div>
-                  <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                    {new Date(item.createdAt).toLocaleString()}
-                  </span>
                 </div>
 
-                <p style={{ margin: 0, color: '#9ca3af', fontSize: '0.9rem', lineHeight: '1.4' }}>
-                  {item.message}
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', shrink: 0 }}>
+                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                    {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', borderTop: '1px solid #262936', paddingTop: '8px' }}>
-                  {item.relatedBookingId ? (
+                  {item.relatedBookingId && (
                     <Link
                       to={`/my-bookings/${item.relatedBookingId._id || item.relatedBookingId}`}
-                      style={{ color: '#00e5ff', fontSize: '0.85rem', textDecoration: 'none', fontWeight: '500' }}
+                      className="btn-text-action"
+                      style={{ fontSize: '0.78rem' }}
                     >
-                      View Booking Details &rarr;
+                      View →
                     </Link>
-                  ) : (
-                    <span />
                   )}
 
                   {!item.isRead && (
@@ -219,7 +207,7 @@ const NotificationsPage = () => {
                         background: 'none',
                         border: 'none',
                         color: '#00e5ff',
-                        fontSize: '0.85rem',
+                        fontSize: '0.75rem',
                         fontWeight: '600',
                         cursor: 'pointer',
                         padding: 0,
@@ -237,7 +225,7 @@ const NotificationsPage = () => {
             currentPage={pagination.page || currentPage}
             totalPages={pagination.totalPages || 1}
             totalItems={pagination.total}
-            itemsPerPage={10}
+            itemsPerPage={15}
             onPageChange={handlePageChange}
           />
         </>
@@ -247,3 +235,4 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
+

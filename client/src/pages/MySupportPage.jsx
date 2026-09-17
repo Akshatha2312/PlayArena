@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { supportService } from '../services/supportService';
 import { LoadingState, ErrorState } from '../components/StateComponents';
-import { MessageSquare, Plus, Clock, CheckCircle2, AlertTriangle, HelpCircle, FileText, ArrowRight, X } from 'lucide-react';
+import { Pagination } from '../components/Pagination';
+import { Plus, Clock, CheckCircle2, HelpCircle, ChevronRight, X } from 'lucide-react';
 import './MySupportPage.css';
 
 export const MySupportPage = () => {
@@ -15,6 +16,8 @@ export const MySupportPage = () => {
   const [error, setError] = useState(null);
   const [issues, setIssues] = useState([]);
   const [activeTab, setActiveTab] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // New Issue Modal Form State
   const [showModal, setShowModal] = useState(Boolean(linkedBookingId));
@@ -75,95 +78,135 @@ export const MySupportPage = () => {
         return true;
       });
 
+  const totalPages = Math.ceil(filteredIssues.length / itemsPerPage) || 1;
+  const paginatedIssues = filteredIssues.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'open':
-        return <span className="status-badge badge-open"><Clock className="icon-xs" /> Open</span>;
+        return <span className="badge-compact badge-pending">OPEN</span>;
       case 'in_progress':
-        return <span className="status-badge badge-in-progress">⚡ In Progress</span>;
+        return <span className="badge-compact badge-pending">⚡ IN PROGRESS</span>;
       case 'waiting_for_customer':
-        return <span className="status-badge badge-waiting">⏳ Response Requested</span>;
+        return <span className="badge-compact badge-pending">⏳ ACTION REQ</span>;
       case 'resolved':
-        return <span className="status-badge badge-resolved"><CheckCircle2 className="icon-xs" /> Resolved</span>;
+        return <span className="badge-compact badge-confirmed">RESOLVED</span>;
       case 'closed':
-        return <span className="status-badge badge-closed">Closed</span>;
+        return <span className="badge-compact badge-cancelled">CLOSED</span>;
       default:
-        return <span className="status-badge">{status}</span>;
+        return <span className="badge-compact">{status}</span>;
     }
   };
 
   if (loading) return <LoadingState message="Loading your support tickets..." />;
-  if (error) return <div className="container mt-4"><ErrorState message={error} onRetry={fetchIssues} /></div>;
+  if (error) return <div className="container page-container"><ErrorState message={error} onRetry={fetchIssues} /></div>;
 
   return (
-    <div className="my-support-page">
-      <div className="support-header">
-        <div className="container support-header-content">
-          <div>
-            <span className="support-tag">💬 Customer Assistance</span>
-            <h1>Help & Support Center</h1>
-            <p>Submit a ticket, report booking issues, or follow up on operational assistance.</p>
+    <div className="container page-container">
+      <div className="compact-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+        <div>
+          <h1 className="page-title">HELP & SUPPORT CENTER</h1>
+          <p className="page-subtitle">Submit tickets, report booking issues, or track support requests.</p>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}>
+          <Plus size={15} style={{ marginRight: 4 }} /> New Support Ticket
+        </button>
+      </div>
+
+      {/* Filter Tabs Toolbar */}
+      <div className="compact-toolbar">
+        <div className="compact-toolbar-left">
+          <button className={`tab-btn ${activeTab === 'ALL' ? 'active' : ''}`} onClick={() => { setActiveTab('ALL'); setCurrentPage(1); }}>
+            ALL TICKETS ({issues.length})
+          </button>
+          <button className={`tab-btn ${activeTab === 'OPEN' ? 'active' : ''}`} onClick={() => { setActiveTab('OPEN'); setCurrentPage(1); }}>
+            OPEN ({issues.filter((i) => i.status !== 'resolved' && i.status !== 'closed').length})
+          </button>
+          <button className={`tab-btn ${activeTab === 'RESOLVED' ? 'active' : ''}`} onClick={() => { setActiveTab('RESOLVED'); setCurrentPage(1); }}>
+            RESOLVED ({issues.filter((i) => i.status === 'resolved').length})
+          </button>
+          <button className={`tab-btn ${activeTab === 'CLOSED' ? 'active' : ''}`} onClick={() => { setActiveTab('CLOSED'); setCurrentPage(1); }}>
+            CLOSED ({issues.filter((i) => i.status === 'closed').length})
+          </button>
+        </div>
+      </div>
+
+      {filteredIssues.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 16px', backgroundColor: '#12141a', borderRadius: '8px', border: '1px solid #262936' }}>
+          <HelpCircle size={32} style={{ color: '#6b7280', marginBottom: '8px' }} />
+          <h3 style={{ color: '#e2e8f0', marginBottom: '4px' }}>No Support Tickets Found</h3>
+          <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>You haven't submitted any support tickets under this filter view.</p>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Dense Table */}
+          <div className="dense-table-container dense-table-desktop">
+            <table className="dense-table">
+              <thead>
+                <tr>
+                  <th>TICKET #</th>
+                  <th>CATEGORY</th>
+                  <th>SUBJECT</th>
+                  <th>LINKED BOOKING</th>
+                  <th>STATUS</th>
+                  <th>SUBMITTED</th>
+                  <th style={{ textAlign: 'right' }}>ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedIssues.map((issue) => (
+                  <tr 
+                    key={issue._id}
+                    className="clickable-row"
+                    onClick={() => navigate(`/support/${issue._id}`)}
+                  >
+                    <td><span className="font-mono text-dim">#{issue.issueNumber}</span></td>
+                    <td><span className="text-xs uppercase">{issue.category.replace('_', ' ')}</span></td>
+                    <td><strong>{issue.subject}</strong></td>
+                    <td>{issue.bookingId?.bookingReference ? `#${issue.bookingId.bookingReference}` : '—'}</td>
+                    <td>{getStatusBadge(issue.status)}</td>
+                    <td className="text-dim text-xs">{new Date(issue.createdAt).toLocaleDateString()}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <Link to={`/support/${issue._id}`} className="btn-icon-link" onClick={(e) => e.stopPropagation()}>
+                        <ChevronRight size={18} />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <button className="btn-create-ticket" onClick={() => setShowModal(true)}>
-            <Plus className="icon-sm" /> Create Support Ticket
-          </button>
-        </div>
-      </div>
 
-      <div className="container support-body">
-        {/* Status Tabs */}
-        <div className="support-tab-bar">
-          <button className={`tab-pill ${activeTab === 'ALL' ? 'active' : ''}`} onClick={() => setActiveTab('ALL')}>
-            All Tickets ({issues.length})
-          </button>
-          <button className={`tab-pill ${activeTab === 'OPEN' ? 'active' : ''}`} onClick={() => setActiveTab('OPEN')}>
-            Active / Open ({issues.filter((i) => i.status !== 'resolved' && i.status !== 'closed').length})
-          </button>
-          <button className={`tab-pill ${activeTab === 'RESOLVED' ? 'active' : ''}`} onClick={() => setActiveTab('RESOLVED')}>
-            Resolved ({issues.filter((i) => i.status === 'resolved').length})
-          </button>
-          <button className={`tab-pill ${activeTab === 'CLOSED' ? 'active' : ''}`} onClick={() => setActiveTab('CLOSED')}>
-            Closed ({issues.filter((i) => i.status === 'closed').length})
-          </button>
-        </div>
-
-        {/* Tickets List */}
-        <div className="support-issues-list">
-          {filteredIssues.map((issue) => (
-            <div key={issue._id} className="support-issue-card">
-              <div className="card-top">
-                <span className="issue-number">#{issue.issueNumber}</span>
-                <span className="issue-category">{issue.category.toUpperCase().replace('_', ' ')}</span>
-                {getStatusBadge(issue.status)}
-              </div>
-
-              <h3 className="issue-subject">{issue.subject}</h3>
-              <p className="issue-description-snippet">{issue.description.slice(0, 140)}...</p>
-
-              {issue.bookingId && (
-                <div className="issue-booking-meta">
-                  📌 Linked to Booking: <strong>#{issue.bookingId.bookingReference}</strong>
+          {/* Mobile Compact Cards */}
+          <div className="compact-cards-list">
+            {paginatedIssues.map((issue) => (
+              <div key={issue._id} className="compact-card-item" onClick={() => navigate(`/support/${issue._id}`)}>
+                <div className="compact-card-header">
+                  <span className="compact-card-title">#{issue.issueNumber} · {issue.subject}</span>
+                  {getStatusBadge(issue.status)}
                 </div>
-              )}
-
-              <div className="card-footer">
-                <span className="issue-date">Submitted: {new Date(issue.createdAt).toLocaleDateString()}</span>
-                <Link to={`/support/${issue._id}`} className="btn-view-thread">
-                  View Thread <ArrowRight className="icon-xs" />
-                </Link>
+                <div className="compact-card-meta">
+                  <span>Cat: {issue.category}</span>
+                  <span>Submitted: {new Date(issue.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="compact-card-actions">
+                  <Link to={`/support/${issue._id}`} className="btn-text-action" onClick={(e) => e.stopPropagation()}>
+                    View Thread →
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
-          {filteredIssues.length === 0 && (
-            <div className="empty-support-card">
-              <HelpCircle className="empty-icon" />
-              <h3>No Support Tickets Found</h3>
-              <p>You haven't submitted any support tickets under this filter view.</p>
-            </div>
-          )}
-        </div>
-      </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredIssues.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        </>
+      )}
 
       {/* New Issue Modal */}
       {showModal && (
@@ -237,3 +280,4 @@ export const MySupportPage = () => {
     </div>
   );
 };
+
