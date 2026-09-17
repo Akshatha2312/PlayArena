@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/adminService';
 import { LoadingState, ErrorState, EmptyState } from '../../components/StateComponents';
+import { Pagination } from '../../components/Pagination';
 
 export const AdminPaymentsPage = () => {
   const [payments, setPayments] = useState([]);
@@ -58,7 +59,7 @@ export const AdminPaymentsPage = () => {
         </div>
 
         <div className="admin-filter-bar">
-          <form onSubmit={handleSearchSubmit} className="search-form">
+          <form onSubmit={handleSearchSubmit} className="search-form" style={{ display: 'flex', gap: '0.5rem' }}>
             <input
               type="text"
               placeholder="Order ID or Payment ID..."
@@ -142,26 +143,13 @@ export const AdminPaymentsPage = () => {
             </table>
           </div>
 
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="pagination-bar">
-              <button
-                disabled={pagination.page <= 1}
-                onClick={() => fetchPayments(pagination.page - 1)}
-                className="btn-secondary"
-              >
-                ← Previous
-              </button>
-              <span>Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)</span>
-              <button
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => fetchPayments(pagination.page + 1)}
-                className="btn-secondary"
-              >
-                Next →
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={pagination.page || 1}
+            totalPages={pagination.totalPages || 1}
+            totalItems={pagination.total}
+            itemsPerPage={10}
+            onPageChange={(p) => fetchPayments(p)}
+          />
         </>
       )}
 
@@ -184,8 +172,8 @@ export const AdminPaymentsPage = () => {
               {selectedPayment.paidAt && <p><strong>Paid At:</strong> {new Date(selectedPayment.paidAt).toLocaleString()}</p>}
             </div>
 
-            <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setSelectedPayment(null)}>Close</button>
+            <div className="modal-actions" style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+              <button className="btn-admin-secondary" onClick={() => setSelectedPayment(null)}>Close</button>
             </div>
           </div>
         </div>

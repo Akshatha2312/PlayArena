@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { bookingService } from '../services/bookingService';
 import { LoadingState, ErrorState, EmptyState } from '../components/StateComponents';
+import { Pagination } from '../components/Pagination';
 import { Calendar, Clock, ArrowRight, Tag } from 'lucide-react';
 import './MyBookingsPage.css';
 
@@ -117,28 +118,13 @@ export const MyBookingsPage = () => {
             })}
           </div>
 
-          {/* Pagination Controls */}
-          {pagination.totalPages > 1 && (
-            <div className="pagination-bar">
-              <button
-                className="btn btn-secondary"
-                disabled={currentPage <= 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </button>
-              <span className="pagination-info">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              <button
-                className="btn btn-secondary"
-                disabled={currentPage >= pagination.totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={pagination.page || currentPage}
+            totalPages={pagination.totalPages || 1}
+            totalItems={pagination.total}
+            itemsPerPage={pagination.limit || 10}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
     </div>

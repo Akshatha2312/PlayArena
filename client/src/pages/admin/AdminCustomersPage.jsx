@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '../../services/adminService';
 import { LoadingState, ErrorState, EmptyState } from '../../components/StateComponents';
+import { Pagination } from '../../components/Pagination';
 
 export const AdminCustomersPage = () => {
   const [customers, setCustomers] = useState([]);
@@ -58,7 +59,7 @@ export const AdminCustomersPage = () => {
           <p className="admin-subtitle">Inspect registered player profiles and historical booking activity</p>
         </div>
 
-        <form onSubmit={handleSearchSubmit} className="search-form">
+        <form onSubmit={handleSearchSubmit} className="search-form" style={{ display: 'flex', gap: '0.5rem' }}>
           <input
             type="text"
             placeholder="Search Name, Email, or Phone..."
@@ -112,26 +113,13 @@ export const AdminCustomersPage = () => {
             </table>
           </div>
 
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="pagination-bar">
-              <button
-                disabled={pagination.page <= 1}
-                onClick={() => fetchCustomers(pagination.page - 1)}
-                className="btn-secondary"
-              >
-                ← Previous
-              </button>
-              <span>Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)</span>
-              <button
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => fetchCustomers(pagination.page + 1)}
-                className="btn-secondary"
-              >
-                Next →
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={pagination.page || 1}
+            totalPages={pagination.totalPages || 1}
+            totalItems={pagination.total}
+            itemsPerPage={10}
+            onPageChange={(p) => fetchCustomers(p)}
+          />
         </>
       )}
 
@@ -180,8 +168,8 @@ export const AdminCustomersPage = () => {
               )}
             </div>
 
-            <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setSelectedCustomer(null)}>Close</button>
+            <div className="modal-actions" style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+              <button className="btn-admin-secondary" onClick={() => setSelectedCustomer(null)}>Close</button>
             </div>
           </div>
         </div>

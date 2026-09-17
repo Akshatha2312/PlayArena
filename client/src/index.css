@@ -28,7 +28,7 @@
   --radius-md: 10px;
   --radius-lg: 16px;
   
-  --max-width: 1200px;
+  --max-width: 1440px;
 }
 
 * {
@@ -98,8 +98,15 @@ input:focus, select:focus, textarea:focus {
 .container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
   width: 100%;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
 }
 
 .page-container {
