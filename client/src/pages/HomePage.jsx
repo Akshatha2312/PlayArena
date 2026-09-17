@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { gameService } from '../services/gameService';
 import { GameCard } from '../components/GameCard';
 import { LoadingState, ErrorState } from '../components/StateComponents';
-import { Trophy, Shield, Zap, ArrowRight, CheckCircle } from 'lucide-react';
+import { Trophy, Zap, ArrowRight, ShieldCheck, Gamepad2, Compass, Layers, CheckCircle } from 'lucide-react';
 import './HomePage.css';
 
 export const HomePage = () => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     gameService
@@ -25,26 +26,52 @@ export const HomePage = () => {
       });
   }, []);
 
+  const categories = [
+    { label: 'COURTS', icon: Trophy, category: 'court' },
+    { label: 'TABLES', icon: Layers, category: 'table' },
+    { label: 'CONSOLES', icon: Gamepad2, category: 'console' },
+    { label: 'SIMULATORS', icon: Zap, category: 'simulator' },
+  ];
+
   return (
     <div className="home-page">
-      {/* Hero Section */}
-      <section className="hero-section">
+      {/* Hero Entrance Section */}
+      <section className="hero-entrance-section">
         <div className="container hero-container">
           <div className="hero-content">
             <span className="hero-badge">
-              <Zap className="hero-badge-icon" /> Next-Gen Sports & Gaming Facility
+              <Zap className="hero-badge-icon" /> DIGITAL SPORTS & GAMING ARENA
             </span>
             <h1 className="hero-title">
-              CHOOSE YOUR GAME.<br />
-              BOOK YOUR ARENA.<br />
-              <span className="title-highlight">PLAY COMPETITIVELY.</span>
+              READY TO PLAY?<br />
+              <span className="title-highlight">CHOOSE YOUR ARENA.</span>
             </h1>
             <p className="hero-description">
-              Play Arena features world-class indoor badminton courts, professional table tennis arenas, high-end PS5/Xbox simulators, and arcade zones. Instant time-slot confirmation and seamless online booking.
+              Reserve professional badminton courts, pool tables, high-end PS5 rigs, and simulator bays with real-time slot availability.
             </p>
+
+            {/* Quick Category Selector Pills */}
+            <div className="category-pills-row">
+              {categories.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.category}
+                    className="category-pill-btn"
+                    onClick={() => navigate(`/games?category=${cat.category}`)}
+                  >
+                    <Icon className="pill-icon" /> {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="hero-actions">
               <Link to="/games" className="btn btn-primary btn-hero">
-                Explore Games Catalog <ArrowRight />
+                EXPLORE ALL ARENAS <ArrowRight />
+              </Link>
+              <Link to="/venue" className="btn btn-secondary btn-hero">
+                <Compass className="btn-icon" /> MAP LAYOUT
               </Link>
             </div>
           </div>
@@ -55,16 +82,17 @@ export const HomePage = () => {
       <section className="featured-section container">
         <div className="section-header">
           <div>
-            <h2 className="section-title">FEATURED ARENAS & GAMES</h2>
-            <p className="section-subtitle">Select an activity to view operational courts and book your preferred time slot.</p>
+            <span className="section-tag">POPULAR ARENAS</span>
+            <h2 className="section-title">FEATURED ACTIVITIES & COURTS</h2>
+            <p className="section-subtitle">Pick an activity below to inspect live resources and choose your session time.</p>
           </div>
           <Link to="/games" className="btn btn-outline">
-            View All Games
+            View Full Catalog &rarr;
           </Link>
         </div>
 
         {loading ? (
-          <LoadingState message="Loading available games..." />
+          <LoadingState message="Connecting to Play Arena catalog..." />
         ) : error ? (
           <ErrorState message={error} />
         ) : games.length === 0 ? (
@@ -78,25 +106,42 @@ export const HomePage = () => {
         )}
       </section>
 
-      {/* How It Works Section */}
+      {/* Interactive Match Flow Steps */}
       <section className="how-it-works-section">
         <div className="container">
-          <h2 className="section-title text-center">HOW PLAY ARENA WORKS</h2>
+          <div className="section-header-center">
+            <span className="section-tag">SIMPLIFIED BOOKING</span>
+            <h2 className="section-title text-center">HOW YOUR SESSION WORKS</h2>
+          </div>
+
           <div className="steps-grid">
             <div className="step-card">
-              <div className="step-number">01</div>
-              <h3>Choose Activity</h3>
-              <p>Browse our catalog of indoor court sports, table games, and eSports stations.</p>
+              <div className="step-header">
+                <span className="step-number">01</span>
+                <Gamepad2 className="step-icon" />
+              </div>
+              <h3>CHOOSE ARENA</h3>
+              <p>Select your favorite sport, court, or gaming console setup from our live catalog.</p>
             </div>
+
             <div className="step-card">
-              <div className="step-number">02</div>
-              <h3>Pick Resource & Time</h3>
-              <p>Select your physical court or station, pick a date, and select an available time slot.</p>
+              <div className="step-number-container">
+                <div className="step-header">
+                  <span className="step-number">02</span>
+                  <Trophy className="step-icon" />
+                </div>
+              </div>
+              <h3>SELECT COURT & SLOT</h3>
+              <p>Pick your specific physical court/table and lock in your preferred time slot.</p>
             </div>
+
             <div className="step-card">
-              <div className="step-number">03</div>
-              <h3>Book & Play</h3>
-              <p>Complete secure checkout via Razorpay and receive instant confirmation.</p>
+              <div className="step-header">
+                <span className="step-number">03</span>
+                <CheckCircle className="step-icon" />
+              </div>
+              <h3>LOCK & PLAY</h3>
+              <p>Complete fast checkout and receive your instant digital entry QR arena pass.</p>
             </div>
           </div>
         </div>

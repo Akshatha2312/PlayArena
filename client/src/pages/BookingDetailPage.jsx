@@ -322,11 +322,12 @@ export const BookingDetailPage = () => {
 
         {/* QR Code Section for Confirmed Bookings */}
         {booking.status === 'confirmed' && qrData && (
-          <div style={{ marginTop: '24px', marginBottom: '24px', textAlign: 'center', backgroundColor: '#0f172a', padding: '24px', borderRadius: '8px', border: '1px solid #0284c7' }}>
-            <h3 style={{ color: '#38bdf8', marginTop: 0, marginBottom: '16px', fontSize: '1.1rem' }}>ENTRY QR PASS</h3>
+          <div className="digital-arena-pass-card" style={{ marginTop: '24px', marginBottom: '24px', textAlign: 'center', backgroundColor: '#12141a', padding: '24px', borderRadius: '12px', border: '1px solid #00e5ff', boxShadow: '0 0 25px rgba(0, 229, 255, 0.15)' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#00e5ff', letterSpacing: '0.08em', marginBottom: '4px' }}>DIGITAL ARENA ACCESS PASS</div>
+            <h3 style={{ color: '#ffffff', marginTop: 0, marginBottom: '16px', fontSize: '1.2rem', fontWeight: '800' }}>{booking.gameId?.name || 'PLAY ARENA'} • {booking.resourceId?.name || 'UNIT'}</h3>
             <QRCodeDisplay value={qrData.qrToken} size={220} />
-            <p style={{ marginTop: '16px', marginBottom: 0, color: '#94a3b8', fontSize: '0.85rem' }}>
-              Present this QR code at Play Arena front desk for instant staff check-in.
+            <p style={{ marginTop: '16px', marginBottom: 0, color: '#9ca3af', fontSize: '0.85rem', fontWeight: '500' }}>
+              Present this QR pass at Play Arena front desk for instant check-in entrance.
             </p>
           </div>
         )}

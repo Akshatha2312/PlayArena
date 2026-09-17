@@ -1,13 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Users, Clock, Tag } from 'lucide-react';
+import { ArrowRight, Users, Clock, Tag, Sparkles } from 'lucide-react';
 import './GameCard.css';
 
 export const GameCard = ({ game }) => {
+  const gameId = game._id || game.id;
+
   return (
-    <div className="game-card">
+    <div className="game-card arena-card-interactive">
       <div className="game-card-header">
-        <span className="badge badge-info">{game.category}</span>
+        <div className="card-badge-row">
+          <span className="badge badge-info">{game.category?.toUpperCase() || 'ARENA'}</span>
+          {game.resourceCount && (
+            <span className="resource-count-tag">
+              <Sparkles className="sparkle-icon" /> {game.resourceCount} UNITS
+            </span>
+          )}
+        </div>
         <h3 className="game-title">{game.name}</h3>
       </div>
 
@@ -33,8 +42,8 @@ export const GameCard = ({ game }) => {
       </div>
 
       <div className="game-card-footer">
-        <Link to={`/games/${game._id || game.id}`} className="btn btn-primary btn-block">
-          <Trophy className="btn-icon" /> View & Book Arena
+        <Link to={`/games/${gameId}`} className="btn btn-primary btn-block enter-arena-btn">
+          ENTER ARENA <ArrowRight className="btn-icon-right" />
         </Link>
       </div>
     </div>

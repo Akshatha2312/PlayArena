@@ -37,8 +37,8 @@ describe('Phase 6 Customer Frontend Test Suite', () => {
     it('1. Home page renders brand headline and call to action', async () => {
       gameService.getGames.mockResolvedValue({ data: { games: [] } });
       renderWithProviders(<HomePage />);
-      expect(screen.getByText(/CHOOSE YOUR GAME/i)).toBeInTheDocument();
-      expect(screen.getByText(/Explore Games Catalog/i)).toBeInTheDocument();
+      expect(screen.getByText(/CHOOSE YOUR ARENA/i)).toBeInTheDocument();
+      expect(screen.getByText(/EXPLORE ALL ARENAS/i)).toBeInTheDocument();
     });
 
     it('2. Games catalog page displays fetched active games', async () => {
@@ -153,7 +153,7 @@ describe('Phase 6 Customer Frontend Test Suite', () => {
       await waitFor(() => {
         expect(screen.getAllByText('Badminton').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Court 1').length).toBeGreaterThan(0);
-        expect(screen.getByText('Time slot is available for instant booking!')).toBeInTheDocument();
+        expect(screen.getByText(/Time slot is available/i)).toBeInTheDocument();
       });
     });
 

@@ -6,10 +6,9 @@ import { paymentService } from '../services/paymentService';
 import { waitlistService } from '../services/waitlistService';
 import { useAuth } from '../context/AuthContext';
 import { LoadingState, ErrorState } from '../components/StateComponents';
-import { Calendar, Clock, CheckCircle2, AlertTriangle, ShieldCheck, CreditCard } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, AlertTriangle, ShieldCheck, Lock, Check, Sparkles } from 'lucide-react';
 import './BookingPage.css';
 
-// Helper to generate dynamic duration options according to Game constraints
 const generateDurationOptions = (min, max, step) => {
   const options = [];
   for (let d = min; d <= max; d += step) {
@@ -18,7 +17,6 @@ const generateDurationOptions = (min, max, step) => {
   return options;
 };
 
-// Helper to load Razorpay SDK dynamically
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
     if (window.Razorpay) {
@@ -32,6 +30,11 @@ const loadRazorpayScript = () => {
     document.body.appendChild(script);
   });
 };
+
+const availableSlotPresetTimes = [
+  '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
+  '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'
+];
 
 export const BookingPage = () => {
   const { gameId, resourceId } = useParams();
@@ -106,9 +109,9 @@ export const BookingPage = () => {
       .then((res) => {
         setIsAvailable(res.data?.available);
         if (res.data?.available) {
-          setAvailabilityMessage('Time slot is available for instant booking!');
+          setAvailabilityMessage('Time slot is available! Click Lock My Slot to secure.');
         } else {
-          setAvailabilityMessage('Selected time slot is already booked. Please choose another time.');
+          setAvailabilityMessage('Selected time slot is already booked. Please choose another slot.');
         }
       })
       .catch((err) => {
@@ -120,7 +123,30 @@ export const BookingPage = () => {
       });
   }, [gameId, resourceId, date, startTime, durationMinutes, game, resource]);
 
-  // Calculated Pricing Breakdown
+  const handleJoinWaitlist = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    setWaitlistJoining(true);
+    setWaitlistSuccess('');
+    setWaitlistError('');
+
+    try {
+      await waitlistService.joinWaitlist({
+        gameId,
+        resourceId,
+        startAt: new Date(`${date}T${startTime}:00`).toISOString(),
+        durationMinutes,
+      });
+      setWaitlistSuccess('Successfully joined waitlist for this slot! We will notify you if it opens up.');
+    } catch (err) {
+      setWaitlistError(err.response?.data?.message || err.message || 'Failed to join waitlist');
+    } finally {
+      setWaitlistJoining(false);
+    }
+  };
+
   const effectivePricePerHour =
     resource?.customPricePerHour !== undefined && resource?.customPricePerHour !== null
       ? resource.customPricePerHour
@@ -139,7 +165,6 @@ export const BookingPage = () => {
     setBookingError(null);
 
     try {
-      // 1. Create Booking in Backend
       const bookingRes = await bookingService.createBooking({
         gameId,
         resourceId,
@@ -151,19 +176,16 @@ export const BookingPage = () => {
       const newBooking = bookingRes.data.booking;
       const createdBookingId = newBooking._id || newBooking.id;
 
-      // 2. Request Payment Order from Backend
       const orderRes = await paymentService.createPaymentOrder(createdBookingId);
       const paymentOrderData = orderRes.data;
 
-      // 3. Load Razorpay Script
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded && !window.Razorpay) {
         throw new Error('Razorpay Checkout SDK failed to load. Please check network connection.');
       }
 
-      // If test mock environment, verify directly
       if (paymentOrderData.orderId.startsWith('order_mock_')) {
-        const verifyRes = await paymentService.verifyPayment({
+        await paymentService.verifyPayment({
           razorpay_order_id: paymentOrderData.orderId,
           razorpay_payment_id: `pay_mock_${Date.now()}`,
           razorpay_signature: 'mock_signature',
@@ -172,7 +194,6 @@ export const BookingPage = () => {
         return;
       }
 
-      // 4. Open Razorpay Checkout Modal
       const options = {
         key: paymentOrderData.keyId,
         amount: paymentOrderData.amount,
@@ -182,7 +203,6 @@ export const BookingPage = () => {
         order_id: paymentOrderData.orderId,
         handler: async (response) => {
           try {
-            // 5. Send Verification to Backend
             await paymentService.verifyPayment({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
@@ -225,7 +245,7 @@ export const BookingPage = () => {
     }
   };
 
-  if (loading) return <LoadingState message="Loading court reservation calendar..." />;
+  if (loading) return <LoadingState message="Securing your arena session..." />;
   if (error) return <ErrorState message={error} />;
 
   const durationOptions = generateDurationOptions(
@@ -236,12 +256,40 @@ export const BookingPage = () => {
 
   return (
     <div className="container page-container">
+      {/* Booking Step Progress Indicator */}
+      <div className="booking-progress-bar">
+        <div className="progress-step completed">
+          <span className="step-num"><Check size={14} /></span>
+          <span className="step-label">GAME</span>
+        </div>
+        <div className="progress-line active"></div>
+        <div className="progress-step completed">
+          <span className="step-num"><Check size={14} /></span>
+          <span className="step-label">UNIT</span>
+        </div>
+        <div className="progress-line active"></div>
+        <div className="progress-step active">
+          <span className="step-num">03</span>
+          <span className="step-label">TIME & LOCK</span>
+        </div>
+        <div className="progress-line"></div>
+        <div className="progress-step">
+          <span className="step-num">04</span>
+          <span className="step-label">PAYMENT</span>
+        </div>
+      </div>
+
       <div className="booking-layout">
-        {/* Left Column: Form Controls */}
+        {/* Left Column: Interactive Time Slot Picker */}
         <div className="booking-form-card">
-          <h1 className="form-title">RESERVE TIME SLOT</h1>
+          <div className="card-header-badge">
+            <span className="badge badge-info">{game.name.toUpperCase()}</span>
+            <span className="resource-name-tag">📍 {resource.name}</span>
+          </div>
+
+          <h1 className="form-title">CHOOSE YOUR SESSION TIME</h1>
           <p className="form-subtitle">
-            Booking court <strong>{resource.name}</strong> for <strong>{game.name}</strong>
+            Pick a date and select an interactive time slot to lock your arena court.
           </p>
 
           {bookingError && <div className="alert alert-error">{bookingError}</div>}
@@ -249,8 +297,8 @@ export const BookingPage = () => {
           {waitlistError && <div className="alert alert-error">⚠️ {waitlistError}</div>}
 
           <form onSubmit={handleBookingAndPayment}>
-            <div className="form-group">
-              <label htmlFor="booking-date">Select Date</label>
+            <div className="form-group margin-bottom-md">
+              <label htmlFor="booking-date">01. Select Date</label>
               <input
                 id="booking-date"
                 type="date"
@@ -258,47 +306,51 @@ export const BookingPage = () => {
                 min={new Date().toISOString().split('T')[0]}
                 onChange={(e) => setDate(e.target.value)}
                 required
+                className="date-picker-input"
               />
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="booking-time">Start Time (24h format)</label>
-                <select
-                  id="booking-time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  required
-                >
-                  {['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'].map((time) => (
-                    <option key={time} value={time}>
-                      {time} hrs
-                    </option>
-                  ))}
-                </select>
+            {/* Interactive Time Slot Selector Grid */}
+            <div className="form-group margin-bottom-md">
+              <label>02. Choose Start Time</label>
+              <div className="interactive-slots-grid">
+                {availableSlotPresetTimes.map((time) => {
+                  const isSelected = startTime === time;
+                  return (
+                    <button
+                      key={time}
+                      type="button"
+                      className={`slot-chip ${isSelected ? 'selected' : ''}`}
+                      onClick={() => setStartTime(time)}
+                    >
+                      <Clock className="chip-icon" />
+                      <span>{time}</span>
+                    </button>
+                  );
+                })}
               </div>
+            </div>
 
-              <div className="form-group">
-                <label htmlFor="booking-duration">Duration</label>
-                <select
-                  id="booking-duration"
-                  value={durationMinutes}
-                  onChange={(e) => setDurationMinutes(parseInt(e.target.value, 10))}
-                  required
-                >
-                  {durationOptions.map((dur) => (
-                    <option key={dur} value={dur}>
-                      {dur} minutes
-                    </option>
-                  ))}
-                </select>
+            <div className="form-group margin-bottom-md">
+              <label htmlFor="booking-duration">03. Session Duration</label>
+              <div className="duration-selector-row">
+                {durationOptions.map((dur) => (
+                  <button
+                    key={dur}
+                    type="button"
+                    className={`duration-chip ${durationMinutes === dur ? 'selected' : ''}`}
+                    onClick={() => setDurationMinutes(dur)}
+                  >
+                    {dur} mins
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Availability Indicator & Waitlist Option */}
             <div className="availability-box">
               {checkingAvailability ? (
-                <div className="checking-text">Checking real-time slot availability...</div>
+                <div className="checking-text">Verifying real-time slot availability...</div>
               ) : isAvailable === true ? (
                 <div className="available-status text-success">
                   <CheckCircle2 className="status-icon" /> {availabilityMessage}
@@ -322,25 +374,31 @@ export const BookingPage = () => {
 
             <button
               type="submit"
-              className="btn btn-primary btn-block submit-booking-btn"
+              className="btn btn-primary btn-block submit-booking-btn lock-slot-btn"
               disabled={submitting || checkingAvailability || isAvailable === false}
             >
-              {submitting ? 'Processing Payment...' : 'Proceed to Razorpay Checkout'}
+              {submitting ? (
+                <>SECURING YOUR SESSION...</>
+              ) : (
+                <>
+                  <Lock className="btn-icon" /> 🔒 LOCK MY SLOT & PAY NOW
+                </>
+              )}
             </button>
           </form>
         </div>
 
         {/* Right Column: Order Summary Card */}
         <div className="summary-card">
-          <h2>BOOKING SUMMARY</h2>
+          <h2>SESSION SUMMARY</h2>
           <div className="summary-list">
             <div className="summary-item">
-              <span className="label">Activity / Game</span>
+              <span className="label">Activity</span>
               <span className="value">{game.name}</span>
             </div>
 
             <div className="summary-item">
-              <span className="label">Court / Resource</span>
+              <span className="label">Selected Unit</span>
               <span className="value">{resource.name}</span>
             </div>
 
@@ -350,7 +408,7 @@ export const BookingPage = () => {
             </div>
 
             <div className="summary-item">
-              <span className="label">Time Interval</span>
+              <span className="label">Session Slot</span>
               <span className="value">{startTime} ({durationMinutes} mins)</span>
             </div>
 
@@ -367,7 +425,7 @@ export const BookingPage = () => {
 
           <div className="security-notice">
             <ShieldCheck className="shield-icon" />
-            <p>100% Backend Verified & Encrypted via Razorpay Payment Gateway.</p>
+            <p>Instant lock. Encrypted checkout via Razorpay Payment Gateway.</p>
           </div>
         </div>
       </div>
