@@ -1,16 +1,57 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Trophy, Calendar, User, LogOut, Menu, X, Bell } from 'lucide-react';
+import {
+  Trophy,
+  Gamepad2,
+  MapPin,
+  Calendar,
+  HelpCircle,
+  Bell,
+  User,
+  CreditCard,
+  FileText,
+  Clock,
+  Settings,
+  LogOut,
+  ChevronDown,
+  Menu,
+  X,
+} from 'lucide-react';
 import { notificationService } from '../services/notificationService';
 import './Navbar.css';
 
 export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Close menus on location change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setDropdownOpen(false);
+  }, [location.pathname]);
+
+  // Fetch notification unread count for customer users
   useEffect(() => {
     let isMounted = true;
     if (isAuthenticated && user?.role === 'customer') {
@@ -33,98 +74,193 @@ export const Navbar = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
-    setMobileMenuOpen(false);
   };
+
+  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
     <header className="navbar-header">
       <div className="container navbar-container">
-        <Link to="/" className="navbar-logo" onClick={() => setMobileMenuOpen(false)}>
+        {/* Brand Logo */}
+        <Link to="/" className="navbar-logo" aria-label="Play Arena Home">
           <Trophy className="logo-icon" />
-          <span className="logo-text">PLAY<span className="logo-highlight">ARENA</span></span>
+          <span className="logo-text">
+            PLAY<span className="logo-highlight">ARENA</span>
+          </span>
         </Link>
 
-        {/* Mobile menu toggle button */}
-        <button
-          className="mobile-menu-btn"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle Navigation Menu"
-        >
-          {mobileMenuOpen ? <X /> : <Menu />}
-        </button>
+        {/* Mobile Header Quick Actions */}
+        <div className="mobile-header-actions">
+          {isAuthenticated && user?.role === 'customer' && (
+            <Link to="/notifications" className="mobile-bell-btn" aria-label="Notifications">
+              <Bell className="nav-icon" />
+              {unreadCount > 0 && (
+                <span className="badge-unread">{unreadCount > 99 ? '99+' : unreadCount}</span>
+              )}
+            </Link>
+          )}
 
-        {/* Navigation Links */}
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Navigation Menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
+
+        {/* Desktop Primary Navigation & Actions */}
         <nav className={`navbar-nav ${mobileMenuOpen ? 'nav-open' : ''}`}>
-          <Link to="/games" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-            Games Catalog
-          </Link>
-          <Link to="/venue" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-            🗺️ Venue Map
-          </Link>
+          <div className="primary-nav">
+            <Link to="/games" className={`nav-link ${isActive('/games') ? 'active' : ''}`}>
+              <Gamepad2 className="nav-icon" /> Games
+            </Link>
+            <Link to="/venue" className={`nav-link ${isActive('/venue') ? 'active' : ''}`}>
+              <MapPin className="nav-icon" /> Venue
+            </Link>
 
-          {isAuthenticated ? (
-            <>
-              <Link to="/my-bookings" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-                <Calendar className="nav-icon" /> My Bookings
-              </Link>
-              <Link to="/my-payments" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-                Payments
-              </Link>
-              {user?.role === 'customer' && (
-                <>
-                  <Link to="/my-invoices" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-                    🧾 Invoices
-                  </Link>
-                  <Link to="/my-support" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-                    💬 Support
-                  </Link>
-                  <Link to="/my-waitlist" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-                    ⏳ Waitlist
-                  </Link>
-                  <Link to="/notifications" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-                  <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <Bell className="nav-icon" /> Notifications
+            {isAuthenticated && (
+              <>
+                <Link
+                  to="/my-bookings"
+                  className={`nav-link ${isActive('/my-bookings') ? 'active' : ''}`}
+                >
+                  <Calendar className="nav-icon" /> My Bookings
+                </Link>
+                <Link
+                  to="/my-support"
+                  className={`nav-link ${isActive('/my-support') || isActive('/support') ? 'active' : ''}`}
+                >
+                  <HelpCircle className="nav-icon" /> Support
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Desktop Right Side Actions */}
+          <div className="nav-actions">
+            {isAuthenticated ? (
+              <>
+                {user?.role === 'customer' && (
+                  <Link
+                    to="/notifications"
+                    className={`notification-icon-btn ${isActive('/notifications') ? 'active' : ''}`}
+                    title="Notifications"
+                    aria-label="Notifications"
+                  >
+                    <Bell className="nav-icon" />
                     {unreadCount > 0 && (
-                      <span
-                        className="badge-unread"
-                        style={{
-                          backgroundColor: '#ef4444',
-                          color: '#ffffff',
-                          fontSize: '0.7rem',
-                          fontWeight: 'bold',
-                          borderRadius: '9999px',
-                          padding: '2px 6px',
-                          marginLeft: '4px',
+                      <span className="badge-unread">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                    )}
+                  </Link>
+                )}
+
+                {/* Account Dropdown */}
+                <div className="account-dropdown-wrapper" ref={dropdownRef}>
+                  <button
+                    className={`account-btn ${dropdownOpen ? 'open' : ''}`}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    aria-haspopup="true"
+                    aria-expanded={dropdownOpen}
+                  >
+                    <User className="user-icon" />
+                    <span className="user-name">{user?.name}</span>
+                    <ChevronDown className={`chevron-icon ${dropdownOpen ? 'rotate' : ''}`} />
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="account-dropdown-menu" role="menu">
+                      <div className="dropdown-user-header">
+                        <p className="user-header-name">{user?.name}</p>
+                        <p className="user-header-email">{user?.email}</p>
+                      </div>
+
+                      <div className="dropdown-divider"></div>
+
+                      <Link
+                        to="/my-payments"
+                        className="dropdown-item"
+                        role="menuitem"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <CreditCard className="dropdown-icon" /> Payments
+                      </Link>
+
+                      <Link
+                        to="/my-invoices"
+                        className="dropdown-item"
+                        role="menuitem"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <FileText className="dropdown-icon" /> Invoices
+                      </Link>
+
+                      <Link
+                        to="/my-waitlist"
+                        className="dropdown-item"
+                        role="menuitem"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <Clock className="dropdown-icon" /> Waitlist
+                      </Link>
+
+                      <Link
+                        to="/settings/notifications"
+                        className="dropdown-item"
+                        role="menuitem"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <Settings className="dropdown-icon" /> Notification Settings
+                      </Link>
+
+                      <div className="dropdown-divider"></div>
+
+                      <button
+                        className="dropdown-item logout-item"
+                        role="menuitem"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          handleLogout();
                         }}
                       >
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
-                  </span>
+                        <LogOut className="dropdown-icon" /> Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile Drawer Menu Extra Items */}
+                <div className="mobile-dropdown-links">
+                  <div className="mobile-section-title">ACCOUNT</div>
+                  <Link to="/my-payments" className="nav-link">
+                    <CreditCard className="nav-icon" /> Payments
                   </Link>
-                  <Link to="/settings/notifications" className="nav-link" onClick={() => setMobileMenuOpen(false)}>
-                    ⚙️ Settings
+                  <Link to="/my-invoices" className="nav-link">
+                    <FileText className="nav-icon" /> Invoices
                   </Link>
-                </>
-              )}
-              <div className="user-profile-badge">
-                <User className="nav-icon" />
-                <span className="user-name">{user?.name}</span>
+                  <Link to="/my-waitlist" className="nav-link">
+                    <Clock className="nav-icon" /> Waitlist
+                  </Link>
+                  <Link to="/settings/notifications" className="nav-link">
+                    <Settings className="nav-icon" /> Notification Settings
+                  </Link>
+                  <button className="btn btn-secondary logout-btn" onClick={handleLogout}>
+                    <LogOut className="nav-icon" /> Logout
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="auth-buttons">
+                <Link to="/login" className="btn btn-secondary">
+                  Login
+                </Link>
+                <Link to="/register" className="btn btn-primary">
+                  Register
+                </Link>
               </div>
-              <button className="btn btn-secondary logout-btn" onClick={handleLogout}>
-                <LogOut className="nav-icon" /> Logout
-              </button>
-            </>
-          ) : (
-            <div className="auth-buttons">
-              <Link to="/login" className="btn btn-secondary" onClick={() => setMobileMenuOpen(false)}>
-                Login
-              </Link>
-              <Link to="/register" className="btn btn-primary" onClick={() => setMobileMenuOpen(false)}>
-                Register
-              </Link>
-            </div>
-          )}
+            )}
+          </div>
         </nav>
       </div>
     </header>

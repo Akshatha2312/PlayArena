@@ -167,8 +167,8 @@ describe('Phase 9 Notifications Frontend Test Suite', () => {
     renderWithProviders(<Navbar />);
 
     await waitFor(() => {
-      expect(screen.getByText('Notifications')).toBeInTheDocument();
-      expect(screen.getByText('3')).toBeInTheDocument();
+      expect(screen.getAllByLabelText('Notifications').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('3').length).toBeGreaterThan(0);
     });
   });
 });
