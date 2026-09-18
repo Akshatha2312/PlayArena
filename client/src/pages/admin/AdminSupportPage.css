@@ -2,21 +2,21 @@
   min-height: 85vh;
   background-color: #0b0f19;
   color: #f3f4f6;
-  padding-bottom: 3rem;
+  padding-bottom: 2rem;
 }
 
 .admin-support-container {
-  padding-top: 2rem;
+  padding-top: 1rem;
 }
 
 .admin-support-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   border-bottom: 1px solid #374151;
-  padding-bottom: 1rem;
+  padding-bottom: 0.65rem;
 }
 
 .admin-support-header h1 {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: #ffffff;
 }
@@ -25,42 +25,43 @@
   background: rgba(16, 185, 129, 0.15);
   border: 1px solid rgba(16, 185, 129, 0.4);
   color: #34d399;
-  padding: 0.85rem 1.25rem;
+  padding: 0.65rem 1rem;
   border-radius: 8px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
+  font-size: 0.85rem;
 }
 
 .support-stats-bar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .stat-card {
   background: #111827;
   border: 1px solid #374151;
   border-radius: 10px;
-  padding: 1rem;
+  padding: 0.75rem 0.85rem;
   display: flex;
   flex-direction: column;
 }
 
-.stat-num { font-size: 1.8rem; font-weight: 800; color: #ffffff; }
+.stat-num { font-size: 1.5rem; font-weight: 800; color: #ffffff; }
 .stat-urgent { color: #ef4444; }
 .stat-open { color: #3b82f6; }
 .stat-resolved { color: #10b981; }
 
-.stat-label { font-size: 0.8rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; }
+.stat-label { font-size: 0.75rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; }
 
 .admin-support-grid {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
-  gap: 2rem;
+  gap: 1.25rem;
 }
 
 @media (max-width: 992px) {
@@ -73,7 +74,7 @@
   background: #111827;
   border: 1px solid #374151;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem 1.15rem;
 }
 
 .filter-controls {

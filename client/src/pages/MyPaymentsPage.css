@@ -1,5 +1,5 @@
 .payments-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .payments-table-wrapper {
@@ -14,11 +14,11 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .payments-table th, .payments-table td {
-  padding: 1.1rem 1.25rem;
+  padding: 0.65rem 0.9rem;
   border-bottom: 1px solid var(--color-border);
 }
 

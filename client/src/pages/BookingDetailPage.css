@@ -2,7 +2,7 @@
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 2.5rem;
+  padding: 1.25rem 1.5rem;
   box-shadow: var(--shadow-card);
 }
 
@@ -10,54 +10,54 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
   border-bottom: 1px solid var(--color-border);
 }
 
 .detail-title {
-  font-size: 1.85rem;
-  margin-top: 0.5rem;
+  font-size: 1.5rem;
+  margin-top: 0.25rem;
 }
 
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.15rem;
 }
 
 .grid-label {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--color-text-dim);
   text-transform: uppercase;
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .grid-value {
   display: block;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text-main);
 }
 
 .highlight-price {
   color: var(--color-accent);
-  font-size: 1.35rem;
+  font-size: 1.25rem;
 }
 
 .cancellation-info-box {
-  margin-top: 2.5rem;
+  margin-top: 1.25rem;
   background-color: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 1.5rem;
+  padding: 1rem 1.15rem;
   border-radius: var(--radius-sm);
 }
 
 .cancellation-info-box h4 {
   color: var(--color-error);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Modal Overlay */
@@ -72,39 +72,39 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .modal-content {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 2rem;
+  padding: 1.25rem 1.5rem;
   max-width: 500px;
   width: 100%;
   box-shadow: var(--shadow-card);
 }
 
 .modal-title {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.15rem;
+  margin-bottom: 0.4rem;
 }
 
 .modal-description {
   color: var(--color-text-muted);
-  font-size: 0.95rem;
-  margin-bottom: 1.5rem;
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .margin-bottom {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 @media (max-width: 600px) {
