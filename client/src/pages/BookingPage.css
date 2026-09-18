@@ -4,8 +4,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  padding: 0.75rem 1rem;
+  margin-bottom: 0.85rem;
+  padding: 0.5rem 0.85rem;
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -14,7 +14,7 @@
 .progress-step {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   opacity: 0.5;
   transition: opacity 0.2s ease;
 }
@@ -25,13 +25,13 @@
 }
 
 .step-num {
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.4rem;
+  height: 1.4rem;
   border-radius: 50%;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   color: var(--color-text-main);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -51,7 +51,7 @@
 }
 
 .step-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   color: var(--color-text-main);
@@ -59,7 +59,7 @@
 
 .progress-line {
   height: 2px;
-  width: 2rem;
+  width: 1.5rem;
   background: var(--color-border);
 }
 
@@ -70,8 +70,8 @@
 /* Layout */
 .booking-layout {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 2.5rem;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.5rem;
   align-items: flex-start;
 }
 
@@ -79,67 +79,74 @@
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 2rem;
+  padding: 1.25rem 1.5rem;
   box-shadow: var(--shadow-card);
+}
+
+.summary-card {
+  position: sticky;
+  top: 1.25rem;
+  align-self: flex-start;
 }
 
 .card-header-badge {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.8rem;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .resource-name-tag {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--color-accent);
   background: rgba(0, 229, 255, 0.1);
-  padding: 0.25rem 0.6rem;
+  padding: 0.2rem 0.5rem;
   border-radius: 4px;
   border: 1px solid rgba(0, 229, 255, 0.25);
 }
 
 .form-title {
-  font-size: 1.75rem;
+  font-size: 1.4rem;
   font-weight: 900;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.2rem;
 }
 
 .form-subtitle {
   color: var(--color-text-muted);
-  font-size: 0.95rem;
-  margin-bottom: 1.75rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.85rem;
 }
 
 .margin-bottom-md {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.85rem;
 }
 
 .date-picker-input {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
+  padding: 0.5rem 0.75rem;
 }
 
 /* Interactive Slots Grid */
 .interactive-slots-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
-  gap: 0.6rem;
-  margin-top: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.35rem;
 }
 
 .slot-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
-  padding: 0.5rem 0.4rem;
+  padding: 0.4rem 0.35rem;
   border-radius: var(--radius-sm);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -159,24 +166,24 @@
 }
 
 .chip-icon {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 0.8rem;
+  height: 0.8rem;
 }
 
 .duration-selector-row {
   display: flex;
-  gap: 0.6rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
 }
 
 .duration-chip {
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.85rem;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
   border-radius: var(--radius-sm);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -196,23 +203,23 @@
 .availability-box {
   background-color: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
-  padding: 1rem;
+  padding: 0.65rem 0.85rem;
   border-radius: var(--radius-sm);
-  margin-top: 1rem;
-  margin-bottom: 1.5rem;
+  margin-top: 0.65rem;
+  margin-bottom: 0.85rem;
 }
 
 .checking-text {
   color: var(--color-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-style: italic;
 }
 
 .available-status {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
+  gap: 0.4rem;
+  font-size: 0.85rem;
   font-weight: 700;
 }
 
@@ -220,39 +227,39 @@
 .text-error { color: var(--color-error); }
 
 .status-icon {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
   flex-shrink: 0;
 }
 
 .lock-slot-btn {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 800;
-  padding: 1rem;
-  letter-spacing: 0.05em;
+  padding: 0.75rem 1rem;
+  letter-spacing: 0.04em;
   background-color: var(--color-primary);
   box-shadow: 0 4px 15px rgba(255, 59, 48, 0.3);
 }
 
 .summary-card h2 {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 800;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.85rem;
   border-bottom: 1px solid var(--color-border);
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
 }
 
 .summary-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.65rem;
 }
 
 .summary-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .summary-item .label {
@@ -266,12 +273,12 @@
 
 .total-item {
   border-top: 1px solid var(--color-border);
-  padding-top: 1rem;
-  margin-top: 0.5rem;
+  padding-top: 0.65rem;
+  margin-top: 0.35rem;
 }
 
 .total-price {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 900;
   color: var(--color-accent);
 }
@@ -279,32 +286,37 @@
 .security-notice {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-top: 2rem;
+  gap: 0.5rem;
+  margin-top: 1rem;
   background-color: var(--color-bg-elevated);
-  padding: 0.75rem;
+  padding: 0.6rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
 }
 
 .shield-icon {
   color: var(--color-success);
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
   flex-shrink: 0;
 }
 
 .security-notice p {
   color: var(--color-text-muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
 }
 
 @media (max-width: 900px) {
   .booking-layout {
     grid-template-columns: 1fr;
   }
+  .summary-card {
+    position: static;
+  }
   .booking-progress-bar {
     overflow-x: auto;
     justify-content: flex-start;
   }
 }
+
